@@ -8,6 +8,7 @@ import uk.ac.soton.comp1206.component.GameBlock;
 import uk.ac.soton.comp1206.component.GameBlockCoordinate;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
+import uk.ac.soton.comp1206.event.LineClearedListener;
 import uk.ac.soton.comp1206.event.NextPieceListener;
 
 /**
@@ -30,6 +31,7 @@ public class Game {
      * Number of columns
      */
     protected final int cols;
+    private LineClearedListener lineClearedListener;
 
     /**
      * The grid model linked to the game
@@ -135,28 +137,28 @@ public class Game {
      * includes clearing lines and preparing the next piece
      */
     private void afterPiece() {
-        // We will calculate the number of lines here
-        int linesCleared = 0;
-
-        // --- Temporary sets to check for unique rows and columns ---
-        HashSet<Integer> clearedRows = new HashSet<>();
-        HashSet<Integer> clearedCols = new HashSet<>();
-
+        // This single call now detects the lines and returns the blocks to be cleared
         HashSet<GameBlockCoordinate> clearedBlocks = grid.clearLines();
 
         if (!clearedBlocks.isEmpty()) {
-            logger.info("Cleared {} blocks.", clearedBlocks.size());
+            logger.info("Lines cleared! Animating {} blocks.", clearedBlocks.size());
 
-            // --- Count the unique rows and columns from the cleared blocks ---
-            for(GameBlockCoordinate coord : clearedBlocks) {
-                clearedRows.add(coord.getY());
-                clearedCols.add(coord.getX());
+            // Notify the listener so the animation can start
+            if (lineClearedListener != null) {
+                lineClearedListener.onLineCleared(clearedBlocks);
             }
-            linesCleared = clearedRows.size() + clearedCols.size();
-            logger.info("That's {} lines!", linesCleared);
         }
 
-        // --- Call our new scoring method ---
+        // --- Calculate score ---
+        int linesCleared = 0;
+        HashSet<Integer> clearedRows = new HashSet<>();
+        HashSet<Integer> clearedCols = new HashSet<>();
+        for(GameBlockCoordinate coord : clearedBlocks) {
+            clearedRows.add(coord.getY());
+            clearedCols.add(coord.getX());
+        }
+        linesCleared = clearedRows.size() + clearedCols.size();
+
         score(linesCleared, clearedBlocks.size());
 
         // Get the next piece ready for the player
@@ -186,6 +188,9 @@ public class Game {
     }
     public void setNextPieceListener(NextPieceListener listener){
         this.nextPieceListener = listener;
+    }
+    public void setLineClearedListener(LineClearedListener listener) {
+        this.lineClearedListener = listener;
     }
 
     /**

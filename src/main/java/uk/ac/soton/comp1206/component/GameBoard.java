@@ -1,5 +1,6 @@
 package uk.ac.soton.comp1206.component;
 
+import java.util.Set;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 import org.apache.logging.log4j.LogManager;
@@ -51,7 +52,7 @@ public class GameBoard extends GridPane {
     /**
      * The blocks inside the grid
      */
-    GameBlock[][] blocks;
+    private final GameBlock[][] blocks;
 
     /**
      * The listener to call when a specific block is clicked
@@ -72,8 +73,13 @@ public class GameBoard extends GridPane {
         this.height = height;
         this.grid = grid;
 
+        setGridLinesVisible(true);
+
+        getStyleClass().add("gameboard");
+        this.blocks = new GameBlock[cols][rows];
+
         //Build the GameBoard
-        build();
+        buildGrid();
     }
     /**
      * Sets the hover effect on a specific block and removes it from the previous one.
@@ -89,6 +95,15 @@ public class GameBoard extends GridPane {
         currentlyHovered = block;
         if (currentlyHovered != null) {
             currentlyHovered.setExternalHover(true); // <--- AND HERE
+        }
+    }
+    /**
+     * Triggers the fade-out animation on a set of blocks.
+     * @param coordinates The set of coordinates for the blocks to be faded.
+     */
+    public void fadeOut(Set<GameBlockCoordinate> coordinates) {
+        for (GameBlockCoordinate coord : coordinates) {
+            getBlock(coord.getX(), coord.getY()).fadeOut();
         }
     }
 
@@ -107,9 +122,10 @@ public class GameBoard extends GridPane {
         this.width = width;
         this.height = height;
         this.grid = new Grid(cols,rows);
+        this.blocks = new GameBlock[cols][rows];
 
         //Build the GameBoard
-        build();
+        buildGrid();
     }
 
     /**
@@ -125,7 +141,7 @@ public class GameBoard extends GridPane {
     /**
      * Build the GameBoard by creating a block at every x and y column and row
      */
-    protected void build() {
+    private void buildGrid() {
         logger.info("Building grid: {} x {}",cols,rows);
 
         setMaxWidth(width);
@@ -133,11 +149,16 @@ public class GameBoard extends GridPane {
 
         setGridLinesVisible(true);
 
-        blocks = new GameBlock[cols][rows];
+        getChildren().clear(); // Clear the visual grid first
 
         for(var y = 0; y < rows; y++) {
             for (var x = 0; x < cols; x++) {
-                createBlock(x,y);
+                // Create the block
+                GameBlock block = buildBlock(x,y);
+                // Add it to our 2D array for later access
+                this.blocks[x][y] = block;
+                // Add it to the visual grid
+                add(block,x,y);
             }
         }
     }
@@ -188,6 +209,23 @@ public class GameBoard extends GridPane {
         if(blockClickedListener != null) {
             blockClickedListener.blockClicked(block);
         }
+    }
+    /**
+     * Create a block at the given x and y position in the GameBoard
+     * @param x column
+     * @param y row
+     * @return the new GameBlock
+     */
+    protected GameBlock buildBlock(int x, int y) {
+        var block = new GameBlock(this, x, y, width / cols, height / rows);
+
+        //Give the block the correct value from our grid
+        block.bind(grid.getGridProperty(x,y));
+
+        //Add a mouse click handler to the block to trigger GameBoard's click handler
+        block.setOnMouseClicked((e) -> blockClicked(e, block));
+
+        return block;
     }
 
 }

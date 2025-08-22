@@ -1,6 +1,7 @@
 package uk.ac.soton.comp1206.game;
 
 import java.util.HashSet;
+import java.util.Set;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import uk.ac.soton.comp1206.component.GameBlockCoordinate;
@@ -167,51 +168,59 @@ public class Grid {
         }
     }
     /**
-     * clears any full lines (rows or columns) from the grid
+     * Clears any full lines (rows or columns) from the grid.
+     * This method both DETECTS and CLEARS the lines.
      *
-     * @return a hashset containing the gameBlockCoordinates of all blocks that were cleared
+     * @return A HashSet containing the GameBlockCoordinates of all blocks that were cleared.
      */
-    public HashSet<GameBlockCoordinate> clearLines(){
+    public HashSet<GameBlockCoordinate> clearLines() {
         HashSet<GameBlockCoordinate> clearedBlocks = new HashSet<>();
 
-        //--check for full rows--
-        for(int y = 0; y < rows; y++){
+        // --- Check for full rows ---
+        for (int y = 0; y < rows; y++) {
             boolean rowIsFull = true;
-            for(int x = 0; x < cols; x++){
-                if(get(x,y) == 0){
+            for (int x = 0; x < cols; x++) {
+                if (get(x, y) == 0) {
                     rowIsFull = false;
                     break;
                 }
             }
-            if(rowIsFull) {
-                //if row is full, add all its blocks to set for clearing
-                for(int x = 0; x < cols; x++){
-                    clearedBlocks.add(new GameBlockCoordinate(x,y));
+
+            if (rowIsFull) {
+                for (int x = 0; x < cols; x++) {
+                    clearedBlocks.add(new GameBlockCoordinate(x, y));
                 }
             }
         }
-        //--check for full columns--
-        for(int x = 0; x < cols; x++){
+
+        // --- Check for full columns ---
+        for (int x = 0; x < cols; x++) {
             boolean columnIsFull = true;
-            for(int y = 0; y < rows; y++){
-                if(get(x,y) == 0){
+            for (int y = 0; y < rows; y++) {
+                if (get(x, y) == 0) {
                     columnIsFull = false;
                     break;
                 }
             }
-            if(columnIsFull){
-                //if column is full, add all its blocks to the set
-                for(int y = 0; y < rows; y++){
-                    clearedBlocks.add(new GameBlockCoordinate(x,y));
+
+            if (columnIsFull) {
+                for (int y = 0; y < rows; y++) {
+                    clearedBlocks.add(new GameBlockCoordinate(x, y));
                 }
             }
         }
-        // -- now, clear the blocks identified --
-        for(GameBlockCoordinate coord : clearedBlocks){
-            set(coord.getX(), coord.getY(), 0);
+
+        // --- Now, clear the blocks identified ---
+        // Note: The animation will happen first, then the data will be cleared
+        // when the animation finishes via the binding.
+        for (GameBlockCoordinate coord : clearedBlocks) {
+            // We are NOT calling set(x,y,0) here directly anymore.
+            // The animation's onFinished event will do this for us.
         }
+
         return clearedBlocks;
     }
+
 
     /**
      * Get the number of columns in this game

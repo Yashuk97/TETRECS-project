@@ -26,4 +26,16 @@ public class PieceBoard extends GameBoard {
     // Place the piece in the center of our 3x3 grid
     grid.playPiece(piece, 1, 1);
   }
+  @Override
+  protected GameBlock buildBlock(int x, int y) {
+    // Create a normal GameBlock
+    var block = super.buildBlock(x, y);
+
+    // Mark the center block to draw an indicator
+    if (x == 1 && y == 1) {
+      block.setCenter(true);
+    }
+
+    return block;
+  }
 }

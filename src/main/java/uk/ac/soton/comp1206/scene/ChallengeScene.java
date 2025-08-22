@@ -1,10 +1,12 @@
 package uk.ac.soton.comp1206.scene;
 
+import java.util.Set;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import uk.ac.soton.comp1206.component.GameBlock;
+import uk.ac.soton.comp1206.component.GameBlockCoordinate;
 import uk.ac.soton.comp1206.component.GameBoard;
 import uk.ac.soton.comp1206.component.PieceBoard;
 import uk.ac.soton.comp1206.game.Game;
@@ -150,9 +152,17 @@ public class ChallengeScene extends BaseScene {
         game.setNextPieceListener(this::displayNextPiece);
         displayNextPiece(game.getNextPiece());
 
+        game.setLineClearedListener(this::onLineCleared);
         // --- ADD KEYBOARD SUPPORT ---
         scene.setOnKeyPressed(this::handleKeyPress);
         game.start();
+    }
+    /**
+     * Called when lines are cleared in the game. Triggers the fade-out animation.
+     * @param clearedBlocks the set of blocks that were cleared
+     */
+    private void onLineCleared(Set<GameBlockCoordinate> clearedBlocks) {
+        board.fadeOut(clearedBlocks);
     }
     /**
      * Handles keyboard input for aiming and placing pieces.

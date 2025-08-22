@@ -207,3 +207,15 @@ TextField {
     -fx-font-family: 'Orbitron';
     -fx-fill: white;
 }
+/* --- Fix for Grid Visibility --- */
+
+.gameboard {
+    -fx-background-color: rgba(0, 0, 0, 0.4); /* Dark semi-transparent background for the whole grid area */
+}
+
+.gameblock {
+    -fx-border-color: rgba(255, 255, 255, 0.1); /* Very faint white border for each block */
+    -fx-border-width: 1;
+}
+
+/* --- End of Fix --- */

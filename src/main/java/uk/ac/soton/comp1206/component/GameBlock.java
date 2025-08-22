@@ -1,10 +1,12 @@
 package uk.ac.soton.comp1206.component;
 
+import javafx.animation.FadeTransition;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.paint.*;
+import javafx.util.Duration;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import javafx.scene.canvas.GraphicsContext;
@@ -21,6 +23,7 @@ import javafx.scene.canvas.GraphicsContext;
 public class GameBlock extends Canvas {
 
     private final GraphicsContext gc;
+    private boolean isCenter = false;
 
     private static final Logger logger = LogManager.getLogger(GameBlock.class);
 
@@ -80,6 +83,8 @@ public class GameBlock extends Canvas {
         this.width = width;
         this.height = height;
         this.gc = getGraphicsContext2D();
+        getStyleClass().add("gameblock");
+
         this.x = x;
         this.y = y;
 
@@ -126,17 +131,47 @@ public class GameBlock extends Canvas {
             return;
         }
 
-        //Otherwise, fill the block with the appropriate colour
-        gc.setFill(COLOURS[value.get()]);
-        gc.fillRect(0,0, width, height);
+        Color color = COLOURS[value.get()];
 
-        //Draw the hover effect if the block is being hovered
-        if (isHover()) { // <--- CHANGE isHovered to isHover()
+        // Fill the main block color
+        gc.setFill(color);
+        gc.fillRect(0, 0, width, height);
+
+        // Add a darker border for a 3D effect
+        gc.setFill(color.darker());
+        gc.fillRect(0, height - 3, width, 3); // Bottom edge
+        gc.fillRect(width - 3, 0, 3, height); // Right edge
+
+        // Add a lighter border for a 3D effect
+        gc.setFill(color.brighter());
+        gc.fillRect(0, 0, width, 3); // Top edge
+        gc.fillRect(0, 0, 3, height); // Left edge
+
+        // Draw the hover effect if the block is being hovered
+        if (isHover()) {
             gc.setFill(Color.color(1, 1, 1, 0.5)); // White with 50% transparency
             gc.fillRect(0, 0, width, height);
         }
+        // Draw a circle in the center if this is a center block
+        if (isCenter) {
+            gc.setFill(Color.color(1, 1, 1, 0.7)); // Semi-transparent white
+            gc.fillOval(width / 4, height / 4, width / 2, height / 2);
+        }
     }
-
+    public void setCenter(boolean isCenter) {
+        this.isCenter = isCenter;
+        paint(); // Repaint to show/hide the circle
+    }
+    /**
+     * Triggers a fade-out animation on this block.
+     */
+    public void fadeOut() {
+        FadeTransition fade = new FadeTransition(Duration.millis(500), this);
+        fade.setFromValue(1.0);
+        fade.setToValue(0.0);
+        fade.setOnFinished(e -> value.set(0)); // After fading, set the value to 0 to make it empty
+        fade.play();
+    }
 
 
     /**
