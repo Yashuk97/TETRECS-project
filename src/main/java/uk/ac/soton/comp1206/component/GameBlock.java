@@ -7,6 +7,7 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.paint.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import javafx.scene.canvas.GraphicsContext;
 
 /**
  * The Visual User Interface component representing a single block in the grid.
@@ -18,6 +19,8 @@ import org.apache.logging.log4j.Logger;
  * The GameBlock value should be bound to a corresponding block in the Grid model.
  */
 public class GameBlock extends Canvas {
+
+    private final GraphicsContext gc;
 
     private static final Logger logger = LogManager.getLogger(GameBlock.class);
 
@@ -42,6 +45,7 @@ public class GameBlock extends Canvas {
             Color.MEDIUMPURPLE,
             Color.PURPLE
     };
+
 
     private final GameBoard gameBoard;
 
@@ -75,12 +79,14 @@ public class GameBlock extends Canvas {
         this.gameBoard = gameBoard;
         this.width = width;
         this.height = height;
+        this.gc = getGraphicsContext2D();
         this.x = x;
         this.y = y;
 
         //A canvas needs a fixed width and height
         setWidth(width);
         setHeight(height);
+
 
         //Do an initial paint
         paint();
@@ -98,19 +104,40 @@ public class GameBlock extends Canvas {
     private void updateValue(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
         paint();
     }
+    /**
+     * Public method to set the hover state of this block.
+     * This safely controls the protected setHover method and triggers a repaint.
+     * @param hover true to enable hover, false to disable
+     */
+    public void setExternalHover(boolean hover) {
+        // Internally, call the protected method that JavaFX provides
+        setHover(hover);
+        // Manually trigger a repaint to show the change
+        paint();
+    }
 
     /**
      * Handle painting of the block canvas
      */
-    public void paint() {
-        //If the block is empty, paint as empty
+    private void paint() {
+        //If the block is empty, paint it transparent
         if(value.get() == 0) {
-            paintEmpty();
-        } else {
-            //If the block is not empty, paint with the colour represented by the value
-            paintColor(COLOURS[value.get()]);
+            gc.clearRect(0,0,width,height);
+            return;
+        }
+
+        //Otherwise, fill the block with the appropriate colour
+        gc.setFill(COLOURS[value.get()]);
+        gc.fillRect(0,0, width, height);
+
+        //Draw the hover effect if the block is being hovered
+        if (isHover()) { // <--- CHANGE isHovered to isHover()
+            gc.setFill(Color.color(1, 1, 1, 0.5)); // White with 50% transparency
+            gc.fillRect(0, 0, width, height);
         }
     }
+
+
 
     /**
      * Paint this canvas empty

@@ -60,6 +60,9 @@ public class GameWindow {
         //Go to menu
         startMenu();
     }
+    public void startInstructions() {
+        loadScene(new InstructionsScene(this));
+    }
 
     /**
      * Setup the font and any other resources we need

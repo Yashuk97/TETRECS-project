@@ -31,6 +31,8 @@ public class GameBoard extends GridPane {
      */
     private final int rows;
 
+    private GameBlock currentlyHovered;
+
     /**
      * The visual width of the board - has to be specified due to being a Canvas
      */
@@ -72,6 +74,22 @@ public class GameBoard extends GridPane {
 
         //Build the GameBoard
         build();
+    }
+    /**
+     * Sets the hover effect on a specific block and removes it from the previous one.
+     * @param block the block to hover over
+     */
+    public void hoverBlock(GameBlock block) {
+        // If a block was previously hovered, turn off its hover effect
+        if (currentlyHovered != null) {
+            currentlyHovered.setExternalHover(false); // <--- CHANGE HERE
+        }
+
+        // Set the new block as the currently hovered one and turn on its hover effect
+        currentlyHovered = block;
+        if (currentlyHovered != null) {
+            currentlyHovered.setExternalHover(true); // <--- AND HERE
+        }
     }
 
     /**

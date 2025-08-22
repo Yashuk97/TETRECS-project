@@ -1,7 +1,9 @@
 package uk.ac.soton.comp1206.game;
 
+import java.util.HashSet;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
+import uk.ac.soton.comp1206.component.GameBlockCoordinate;
 
 /**
  * The Grid is a model which holds the state of a game board. It is made up of a set of Integer values arranged in a 2D
@@ -88,6 +90,130 @@ public class Grid {
     }
 
     /**
+     * check if a gamepiece can be placed at the given grid coordinates
+     * coordinates are for the center of the piece
+     *
+     * @param piece piece to check
+     * @param gridX x-coordinate for the center of the piece
+     * @param gridY y-coordinate for the center of the piece
+     * @return true if piece can be placed, false if not
+     */
+    public boolean canPlayPiece(GamePiece piece, int gridX, int gridY){
+        int[][] blocks = piece.getBlocks();
+
+        //loop through 3x3 blocks of the gamepiece
+        for (int x = 0; x < 3; x++){
+            for (int y = 0; y < 3; y++){
+
+                //if block in the piece is empty, we dont care, so we skip to next one
+                if (blocks[x][y] == 0){
+                    continue;
+                }
+
+                //calculate the actual position on the main grid
+                // offset is -1 because top-left of the piece is at (0,0) relative to its center at (1,1)
+                int actualX = gridX + (x-1);
+                int actualY = gridY + (y-1);
+
+                // ---- Rule 1: Check if block is out of bounds ----
+                if (actualX < 0 || actualX >= cols || actualY < 0 || actualY >= rows) {
+                    //this block of piece would be off the grid, so the placement is invalid
+                    return false;
+                }
+
+                // ----Rule 2: Check if grid space is already occupied ----
+                if (get(actualX, actualY) != 0){
+
+                    //this grid cell is already filled so we can't place block here
+                    return false;
+                }
+            }
+        }
+        //if we looped through all the pieces blocks and none of them failed the checks, then placement is valid
+
+        return true;
+
+    }
+
+    /**
+     * Place a given GamePiece on the grid at the given coordinates
+     * assumes canPlayPiece has already been checked
+     * coordinates are for the center of the piece
+     *
+     * @param piece the piece to place
+     * @param gridX the x-coordinate for the center of piece
+     * @param gridY the y-coordinate for the center of piece
+     */
+    public void playPiece(GamePiece piece, int gridX, int gridY){
+        int[][] blocks = piece.getBlocks();
+
+        //loop through 3x3 blocks of gamePiece
+        for(int x = 0; x < 3; x++){
+            for(int y = 0; y < 3; y++){
+
+                //if block is in the piece is empty, there's nothing to place, so we skip it
+                if (blocks[x][y] == 0){
+                    continue;
+                }
+
+                //calculate the actual position on the main game grid
+                int actualX = gridX + (x-1);
+                int actualY = gridY + (y-1);
+
+                //set the value of the grid cell to the value of the piece
+                //set method updates simpleIntegerProperty, which will automatically update UI later because of binding
+                set(actualX, actualY, piece.getValue());
+            }
+        }
+    }
+    /**
+     * clears any full lines (rows or columns) from the grid
+     *
+     * @return a hashset containing the gameBlockCoordinates of all blocks that were cleared
+     */
+    public HashSet<GameBlockCoordinate> clearLines(){
+        HashSet<GameBlockCoordinate> clearedBlocks = new HashSet<>();
+
+        //--check for full rows--
+        for(int y = 0; y < rows; y++){
+            boolean rowIsFull = true;
+            for(int x = 0; x < cols; x++){
+                if(get(x,y) == 0){
+                    rowIsFull = false;
+                    break;
+                }
+            }
+            if(rowIsFull) {
+                //if row is full, add all its blocks to set for clearing
+                for(int x = 0; x < cols; x++){
+                    clearedBlocks.add(new GameBlockCoordinate(x,y));
+                }
+            }
+        }
+        //--check for full columns--
+        for(int x = 0; x < cols; x++){
+            boolean columnIsFull = true;
+            for(int y = 0; y < rows; y++){
+                if(get(x,y) == 0){
+                    columnIsFull = false;
+                    break;
+                }
+            }
+            if(columnIsFull){
+                //if column is full, add all its blocks to the set
+                for(int y = 0; y < rows; y++){
+                    clearedBlocks.add(new GameBlockCoordinate(x,y));
+                }
+            }
+        }
+        // -- now, clear the blocks identified --
+        for(GameBlockCoordinate coord : clearedBlocks){
+            set(coord.getX(), coord.getY(), 0);
+        }
+        return clearedBlocks;
+    }
+
+    /**
      * Get the number of columns in this game
      * @return number of columns
      */
@@ -101,6 +227,16 @@ public class Grid {
      */
     public int getRows() {
         return rows;
+    }
+    /**
+     * Clears the grid by setting all values to 0.
+     */
+    public void clear() {
+        for (int y = 0; y < rows; y++) {
+            for (int x = 0; x < cols; x++) {
+                set(x, y, 0);
+            }
+        }
     }
 
 }

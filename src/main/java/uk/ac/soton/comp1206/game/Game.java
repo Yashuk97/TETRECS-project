@@ -1,8 +1,14 @@
 package uk.ac.soton.comp1206.game;
 
+import java.util.HashSet;
+import java.util.Random;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import uk.ac.soton.comp1206.component.GameBlock;
+import uk.ac.soton.comp1206.component.GameBlockCoordinate;
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.SimpleIntegerProperty;
+import uk.ac.soton.comp1206.event.NextPieceListener;
 
 /**
  * The Game class handles the main logic, state and properties of the TetrECS game. Methods to manipulate the game state
@@ -12,10 +18,13 @@ public class Game {
 
     private static final Logger logger = LogManager.getLogger(Game.class);
 
+    private GamePiece currentPiece;
+    private GamePiece nextPiece;
     /**
      * Number of rows
      */
     protected final int rows;
+    private NextPieceListener nextPieceListener;
 
     /**
      * Number of columns
@@ -26,6 +35,10 @@ public class Game {
      * The grid model linked to the game
      */
     protected final Grid grid;
+    public final IntegerProperty score = new SimpleIntegerProperty(0);
+    public final IntegerProperty level = new SimpleIntegerProperty(0);
+    public final IntegerProperty lives = new SimpleIntegerProperty(3);
+    public final IntegerProperty multiplier = new SimpleIntegerProperty(1);
 
     /**
      * Create a new game with the specified rows and columns. Creates a corresponding grid model.
@@ -38,6 +51,11 @@ public class Game {
 
         //Create a new grid model to represent the game state
         this.grid = new Grid(cols,rows);
+        logger.info("New game created with size {}x{}", cols, rows);
+
+        //start game with a piece
+        nextPiece = spawnPiece();
+        nextPiece();
     }
 
     /**
@@ -63,6 +81,20 @@ public class Game {
         //Get the position of this block
         int x = gameBlock.getX();
         int y = gameBlock.getY();
+        logger.info("Block clicked at ({}, {})", x, y);
+
+        //checking if the piece can be played at this location
+        if (grid.canPlayPiece(currentPiece, x, y)){
+            //if it can, then play the piece
+            logger.info("Piece {} can be played at ({}, {})", currentPiece.toString(), x, y);
+            grid.playPiece(currentPiece, x, y);
+
+            afterPiece();
+
+        } else {
+            logger.info("Cannot play piece {} at ({}, {})", currentPiece.toString(), x, y);
+        //add sound if a piece fails to move
+        }
 
         //Get the new value for this block
         int previousValue = grid.get(x,y);
@@ -74,6 +106,87 @@ public class Game {
         //Update the grid with the new value
         grid.set(x,y,newValue);
     }
+    /**
+     * spawns a new random GamePiece
+     * @return the new GamePiece
+     */
+    public GamePiece spawnPiece(){
+        //GamePiece class has 15 pieces defined, numbered 0-14
+        Random random = new Random();
+        int pieceNumber = random.nextInt(15);
+        logger.info("Spawning new piece: {}", pieceNumber);
+        return GamePiece.createPiece(pieceNumber);
+    }
+    /**
+     * handle what happens when next piece is needed
+     */
+    public void nextPiece() {
+        logger.info("Generating next piece");
+        currentPiece = nextPiece; // The old "next" is now the "current"
+        nextPiece = spawnPiece(); // Generate a new "next" piece
+
+        //notify listener that a new piece is ready
+        if(nextPieceListener != null){
+            nextPieceListener.onNextPiece(nextPiece);
+        }
+    }
+    /**
+     * handles the logic that should occur after a piece has been played
+     * includes clearing lines and preparing the next piece
+     */
+    private void afterPiece() {
+        // We will calculate the number of lines here
+        int linesCleared = 0;
+
+        // --- Temporary sets to check for unique rows and columns ---
+        HashSet<Integer> clearedRows = new HashSet<>();
+        HashSet<Integer> clearedCols = new HashSet<>();
+
+        HashSet<GameBlockCoordinate> clearedBlocks = grid.clearLines();
+
+        if (!clearedBlocks.isEmpty()) {
+            logger.info("Cleared {} blocks.", clearedBlocks.size());
+
+            // --- Count the unique rows and columns from the cleared blocks ---
+            for(GameBlockCoordinate coord : clearedBlocks) {
+                clearedRows.add(coord.getY());
+                clearedCols.add(coord.getX());
+            }
+            linesCleared = clearedRows.size() + clearedCols.size();
+            logger.info("That's {} lines!", linesCleared);
+        }
+
+        // --- Call our new scoring method ---
+        score(linesCleared, clearedBlocks.size());
+
+        // Get the next piece ready for the player
+        nextPiece();
+    }
+
+    /**
+     * Handles scoring based on lines and blocks cleared.
+     * @param linesCleared the number of lines cleared
+     * @param blocksCleared the number of blocks cleared
+     */
+    private void score(int linesCleared, int blocksCleared) {
+        if (linesCleared > 0) {
+            // Add points based on the formula
+            int points = linesCleared * blocksCleared * 10 * multiplier.get();
+            score.set(score.get() + points);
+
+            // Increase the multiplier for the next successful clear
+            multiplier.set(multiplier.get() + 1);
+        } else {
+            // If no lines were cleared, reset the multiplier
+            multiplier.set(1);
+        }
+
+        // Update the level based on the score
+        level.set(score.get() / 1000);
+    }
+    public void setNextPieceListener(NextPieceListener listener){
+        this.nextPieceListener = listener;
+    }
 
     /**
      * Get the grid model inside this game representing the game state of the board
@@ -83,6 +196,9 @@ public class Game {
         return grid;
     }
 
+    public GamePiece getNextPiece() {
+        return nextPiece;
+    }
     /**
      * Get the number of columns in this game
      * @return number of columns
@@ -97,6 +213,18 @@ public class Game {
      */
     public int getRows() {
         return rows;
+    }
+    public IntegerProperty scoreProperty(){
+        return score;
+    }
+    public IntegerProperty levelProperty(){
+        return level;
+    }
+    public IntegerProperty livesProperty(){
+        return lives;
+    }
+    public IntegerProperty multiplierProperty(){
+        return multiplier;
     }
 
 
