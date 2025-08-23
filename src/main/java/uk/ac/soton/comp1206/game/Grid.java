@@ -113,8 +113,8 @@ public class Grid {
 
                 //calculate the actual position on the main grid
                 // offset is -1 because top-left of the piece is at (0,0) relative to its center at (1,1)
-                int actualX = gridX + (x-1);
-                int actualY = gridY + (y-1);
+                int actualX = gridX + (x - 1);
+                int actualY = gridY + (y - 1);
 
                 // ---- Rule 1: Check if block is out of bounds ----
                 if (actualX < 0 || actualX >= cols || actualY < 0 || actualY >= rows) {
@@ -145,24 +145,20 @@ public class Grid {
      * @param gridX the x-coordinate for the center of piece
      * @param gridY the y-coordinate for the center of piece
      */
-    public void playPiece(GamePiece piece, int gridX, int gridY){
+    public void playPiece(GamePiece piece, int gridX, int gridY) {
         int[][] blocks = piece.getBlocks();
 
-        //loop through 3x3 blocks of gamePiece
-        for(int x = 0; x < 3; x++){
-            for(int y = 0; y < 3; y++){
+        for (int x = 0; x < 3; x++) {
+            for (int y = 0; y < 3; y++) {
 
-                //if block is in the piece is empty, there's nothing to place, so we skip it
-                if (blocks[x][y] == 0){
+                if (blocks[x][y] == 0) {
                     continue;
                 }
 
-                //calculate the actual position on the main game grid
-                int actualX = gridX + (x-1);
-                int actualY = gridY + (y-1);
+                // --- VERIFY THIS SECTION ---
+                int actualX = gridX + (x - 1);
+                int actualY = gridY + (y - 1);
 
-                //set the value of the grid cell to the value of the piece
-                //set method updates simpleIntegerProperty, which will automatically update UI later because of binding
                 set(actualX, actualY, piece.getValue());
             }
         }

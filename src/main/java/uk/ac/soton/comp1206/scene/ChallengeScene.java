@@ -1,8 +1,14 @@
 package uk.ac.soton.comp1206.scene;
 
 import java.util.Set;
+import javafx.animation.KeyFrame;
+import javafx.animation.KeyValue;
+import javafx.animation.Timeline;
+import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
+import javafx.util.Duration;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import uk.ac.soton.comp1206.component.GameBlock;
@@ -17,6 +23,7 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
 import javafx.beans.binding.Bindings;
 import javafx.geometry.Pos;
+import javafx.scene.shape.Rectangle;
 
 /**
  * The Single Player challenge scene. Holds the UI for the single player challenge mode in the game.
@@ -26,7 +33,9 @@ public class ChallengeScene extends BaseScene {
     private static final Logger logger = LogManager.getLogger(MenuScene.class);
     protected Game game;
     protected GameBoard board;
+    private Rectangle timerBar;
     private PieceBoard nextPieceBoard;
+
 
     //coordinates for keyboard-controlled aim
     private int aimX = 2;
@@ -80,6 +89,13 @@ public class ChallengeScene extends BaseScene {
         infoPane.setSpacing(10);
         infoPane.setAlignment(Pos.CENTER); // Center the labels within the VBox
         mainPane.setRight(infoPane); // Place the info panel on the right
+
+        // --- Create and position the Timer Bar ---
+        timerBar = new Rectangle();
+        timerBar.setHeight(20); // 20 pixels high
+        timerBar.setWidth(gameWindow.getWidth()); // Start at full width
+        timerBar.setFill(Color.GREEN); // Start with a green color
+        mainPane.setBottom(timerBar);
 
         scoreLabel = new Label("Score: 0");
         levelLabel = new Label("Level: 0");
@@ -151,11 +167,49 @@ public class ChallengeScene extends BaseScene {
 
         game.setNextPieceListener(this::displayNextPiece);
         displayNextPiece(game.getNextPiece());
+        // Inside the initialise() method's key listener
+
 
         game.setLineClearedListener(this::onLineCleared);
+        game.setGameLoopListener(delay -> animateTimerBar(delay));
         // --- ADD KEYBOARD SUPPORT ---
         scene.setOnKeyPressed(this::handleKeyPress);
         game.start();
+        game.setGameOverListener(() -> endGame());
+    }
+    /**
+     * Animates the timer bar based on the provided delay.
+     * @param delay the duration for the animation
+     */
+    private void animateTimerBar(int delay) {
+        logger.info("Animating timer bar with delay: {}", delay);
+
+        // Create a timeline animation
+        Timeline timeline = new Timeline();
+
+        // Use .addAll() to add multiple KeyFrames at once
+        timeline.getKeyFrames().addAll(
+            new KeyFrame(Duration.ZERO, new KeyValue(timerBar.widthProperty(), gameWindow.getWidth())),
+            new KeyFrame(new Duration(delay), new KeyValue(timerBar.widthProperty(), 0))
+        );
+
+        // Change color based on urgency
+        if (delay <= 10000) {
+            timerBar.setFill(Color.RED);
+        } else if (delay <= 11000) {
+            timerBar.setFill(Color.ORANGE);
+        } else {
+            timerBar.setFill(Color.GREEN);
+        }
+
+        timeline.play();
+    }
+    /**
+     * Called when the game is over.
+     */
+    private void endGame() {
+        logger.info("Ending game and returning to menu.");
+        gameWindow.startMenu();
     }
     /**
      * Called when lines are cleared in the game. Triggers the fade-out animation.
@@ -169,31 +223,33 @@ public class ChallengeScene extends BaseScene {
      * @param event the keyboard event
      */
     private void handleKeyPress(KeyEvent event) {
-        // First, move the aim based on the key pressed
+        // First, check for system-level keys like ESCAPE
+        if (event.getCode() == KeyCode.ESCAPE) {
+            game.shutdown();
+            gameWindow.startMenu();
+            return; // Stop processing further
+        }
+
+        // Then, handle the game controls
         switch (event.getCode()) {
             case UP:
             case W:
-                // Move aim up
                 aimY = Math.max(0, aimY - 1);
                 break;
             case DOWN:
             case S:
-                // Move aim down
                 aimY = Math.min(game.getGrid().getRows() - 1, aimY + 1);
                 break;
             case LEFT:
             case A:
-                // Move aim left
                 aimX = Math.max(0, aimX - 1);
                 break;
             case RIGHT:
             case D:
-                // Move aim right
                 aimX = Math.min(game.getGrid().getCols() - 1, aimX + 1);
                 break;
             case ENTER:
             case X:
-                // Place piece at the current aim
                 game.blockClicked(board.getBlock(aimX, aimY));
                 break;
         }

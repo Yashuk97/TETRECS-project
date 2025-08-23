@@ -133,26 +133,27 @@ public class GameBlock extends Canvas {
 
         Color color = COLOURS[value.get()];
 
-        // Fill the main block color
+        // 1. Fill the main block color first
         gc.setFill(color);
         gc.fillRect(0, 0, width, height);
 
-        // Add a darker border for a 3D effect
+        // 2. Draw darker shades for a 3D shadow effect
         gc.setFill(color.darker());
         gc.fillRect(0, height - 3, width, 3); // Bottom edge
         gc.fillRect(width - 3, 0, 3, height); // Right edge
 
-        // Add a lighter border for a 3D effect
+        // 3. Draw lighter shades for a 3D highlight effect
         gc.setFill(color.brighter());
         gc.fillRect(0, 0, width, 3); // Top edge
         gc.fillRect(0, 0, 3, height); // Left edge
 
-        // Draw the hover effect if the block is being hovered
+        // 4. Draw the hover effect last so it's on top
         if (isHover()) {
             gc.setFill(Color.color(1, 1, 1, 0.5)); // White with 50% transparency
             gc.fillRect(0, 0, width, height);
         }
-        // Draw a circle in the center if this is a center block
+
+        // 5. Draw a circle in the center if this is a center block
         if (isCenter) {
             gc.setFill(Color.color(1, 1, 1, 0.7)); // Semi-transparent white
             gc.fillOval(width / 4, height / 4, width / 2, height / 2);
@@ -169,7 +170,6 @@ public class GameBlock extends Canvas {
         FadeTransition fade = new FadeTransition(Duration.millis(500), this);
         fade.setFromValue(1.0);
         fade.setToValue(0.0);
-        fade.setOnFinished(e -> value.set(0)); // After fading, set the value to 0 to make it empty
         fade.play();
     }
 

@@ -2,14 +2,21 @@ package uk.ac.soton.comp1206.game;
 
 import java.util.HashSet;
 import java.util.Random;
+import javafx.animation.PauseTransition;
+import javafx.application.Platform;
+import javafx.util.Duration;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import uk.ac.soton.comp1206.component.GameBlock;
 import uk.ac.soton.comp1206.component.GameBlockCoordinate;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
+import uk.ac.soton.comp1206.event.GameLoopListener;
+import uk.ac.soton.comp1206.event.GameOverListener;
 import uk.ac.soton.comp1206.event.LineClearedListener;
 import uk.ac.soton.comp1206.event.NextPieceListener;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * The Game class handles the main logic, state and properties of the TetrECS game. Methods to manipulate the game state
@@ -25,6 +32,9 @@ public class Game {
      * Number of rows
      */
     protected final int rows;
+    private GameOverListener gameOverListener;
+    private GameLoopListener gameLoopListener;
+    private Timer gameLoopTimer;
     private NextPieceListener nextPieceListener;
 
     /**
@@ -73,6 +83,7 @@ public class Game {
      */
     public void initialiseGame() {
         logger.info("Initialising game");
+        startTimer();
     }
 
     /**
@@ -137,18 +148,41 @@ public class Game {
      * includes clearing lines and preparing the next piece
      */
     private void afterPiece() {
-        // This single call now detects the lines and returns the blocks to be cleared
         HashSet<GameBlockCoordinate> clearedBlocks = grid.clearLines();
 
         if (!clearedBlocks.isEmpty()) {
             logger.info("Lines cleared! Animating {} blocks.", clearedBlocks.size());
 
-            // Notify the listener so the animation can start
+            // Notify the listener to START the animation
             if (lineClearedListener != null) {
                 lineClearedListener.onLineCleared(clearedBlocks);
             }
-        }
 
+            // Create a pause that matches the animation duration
+            PauseTransition delay = new PauseTransition(new Duration(500));
+            delay.setOnFinished(e -> {
+                // AFTER the pause, clear the grid data
+                for (GameBlockCoordinate coord : clearedBlocks) {
+                    grid.set(coord.getX(), coord.getY(), 0);
+                }
+
+                // Then continue with the rest of the game logic
+                continueGameFlow(clearedBlocks);
+            });
+            delay.play();
+
+        } else {
+            // If no lines were cleared, continue immediately
+            continueGameFlow(clearedBlocks);
+        }
+    }
+
+    /**
+     * Handles scoring and getting the next piece.
+     * Separated to be called after the clear line animation delay.
+     * @param clearedBlocks the blocks that were cleared
+     */
+    private void continueGameFlow(HashSet<GameBlockCoordinate> clearedBlocks) {
         // --- Calculate score ---
         int linesCleared = 0;
         HashSet<Integer> clearedRows = new HashSet<>();
@@ -161,7 +195,7 @@ public class Game {
 
         score(linesCleared, clearedBlocks.size());
 
-        // Get the next piece ready for the player
+        resetTimer();
         nextPiece();
     }
 
@@ -192,6 +226,9 @@ public class Game {
     public void setLineClearedListener(LineClearedListener listener) {
         this.lineClearedListener = listener;
     }
+    public void setGameLoopListener(GameLoopListener listener){
+        this.gameLoopListener = listener;
+    }
 
     /**
      * Get the grid model inside this game representing the game state of the board
@@ -199,6 +236,25 @@ public class Game {
      */
     public Grid getGrid() {
         return grid;
+    }
+    public void setGameOverListener(GameOverListener listener){
+        this.gameOverListener = listener;
+        if (lives.get() <= 0) {
+            logger.info("Game Over!");
+            gameLoopTimer.cancel();
+
+            if (gameOverListener != null) {
+                // Run on JavaFX thread to be safe with UI changes
+                Platform.runLater(gameOverListener::onGameOver);
+            }
+            return;
+        }
+    }
+    public void shutdown() {
+        if (gameLoopTimer != null) {
+            gameLoopTimer.cancel();
+            logger.info("Game timer shut down.");
+        }
     }
 
     public GamePiece getNextPiece() {
@@ -210,6 +266,75 @@ public class Game {
      */
     public int getCols() {
         return cols;
+    }
+    /**
+     * Calculates the delay for the game loop timer based on the current level.
+     * @return the delay in milliseconds
+     */
+    public int getTimerDelay() {
+        // The delay is the maximum of either 2500ms or (12000 - 500 * level)
+        return Math.max(2500, 12000 - 500 * level.get());
+    }
+    /**
+     * Starts the game loop timer.
+     */
+    public void startTimer() {
+        // Cancel any existing timer
+        if (gameLoopTimer != null) {
+            gameLoopTimer.cancel();
+        }
+
+        // Create a new timer and schedule the gameLoop task
+        gameLoopTimer = new Timer();
+        gameLoopTimer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                // This code runs when the timer fires
+                gameLoop();
+            }
+        }, getTimerDelay(), getTimerDelay()); // Initial delay and repeat interval
+
+        logger.info("Timer started with delay: {}ms", getTimerDelay());
+      // Notify the listener
+      if(gameLoopListener != null) {
+        Platform.runLater(() -> gameLoopListener.onGameLoop(getTimerDelay()));
+      }
+    }
+    /**
+     * The main game loop action. Called when the timer fires.
+     */
+    private void gameLoop() {
+        logger.info("Game loop fired!");
+
+        // Use Platform.runLater to make changes to JavaFX properties from a background thread
+        Platform.runLater(() -> {
+            // Decrement lives
+            lives.set(lives.get() - 1);
+
+            // Check for game over
+            if (lives.get() <= 0) {
+                logger.info("Game Over!");
+                gameLoopTimer.cancel(); // Stop the timer
+                if (gameOverListener != null) {
+                    gameOverListener.onGameOver();
+                }
+                return;
+            }
+
+            // Get the next piece and reset the multiplier
+            nextPiece();
+            multiplier.set(1);
+        });
+    }
+
+    /**
+     * Resets the game loop timer.
+     */
+    public void resetTimer() {
+        if (gameLoopTimer != null) {
+            gameLoopTimer.cancel();
+            startTimer();
+        }
     }
 
     /**
