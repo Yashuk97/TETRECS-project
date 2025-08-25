@@ -7,13 +7,11 @@
 }
 
 .menu-background {
-    -fx-background-image: url("../images/1.jpg");
-    -fx-background-size: cover;
+    -fx-background-color: linear-gradient(from 0% 0% to 0% 100%, #301934, #191970);
 }
 
 .challenge-background {
-    -fx-background-image: url("../images/2.jpg");
-    -fx-background-size: cover;
+    -fx-background-color: linear-gradient(from 0% 0% to 0% 100%, #301934, #191970);
 }
 
 .menu {
@@ -49,13 +47,13 @@
 }
 
 .title {
-    -fx-fill: white;
+    -fx-fill: white; /* Main text color */
     -fx-font-family: 'Orbitron';
     -fx-font-size: 32px;
     -fx-font-weight: 900;
-    -fx-border-color: black;
-    -fx-stroke: black;
-    -fx-effect: dropshadow(gaussian, black, 1, 1.0, 1, 1);
+    -fx-stroke: #00008B; /* Dark Blue outline */
+    -fx-stroke-width: 1.5;
+    -fx-effect: dropshadow(gaussian, #00FFFF, 2, 1.0, 0, 0);
 }
 
 .heading {
@@ -65,29 +63,31 @@
     -fx-font-weight: 700;
     -fx-border-color: black;
     -fx-stroke: black;
-    -fx-effect: dropshadow(gaussian, black, 1, 1.0, 1, 1);
+    -fx-effect: dropshadow(gaussian, #00FFFF, 2, 1.0, 0, 0);
 }
 
 .score {
-    -fx-fill: yellow;
+    -fx-fill: white;
     -fx-font-family: 'Orbitron';
     -fx-font-size: 36px;
     -fx-font-weight: 700;
     -fx-border-color: black;
-    -fx-stroke: black;
+    -fx-stroke: #00008B;
+    -fx-stroke-width: 1;
     -fx-text-alignment: center;
-    -fx-effect: dropshadow(gaussian, black, 1, 1.0, 1, 1);
+    -fx-effect: dropshadow(gaussian, #FF007F, 3, 1.0, 0, 0);
 }
 
 .level {
-    -fx-fill: #ff6600;
+    -fx-fill: lightblue;
     -fx-font-family: 'Orbitron';
     -fx-font-size: 24px;
     -fx-font-weight: 700;
     -fx-border-color: black;
-    -fx-stroke: black;
+    -fx-stroke: #00008B;
+    -fx-stroke-width: 1;
     -fx-text-alignment: center;
-    -fx-effect: dropshadow(gaussian, black, 1, 1.0, 1, 1);
+    -fx-effect: dropshadow(gaussian, #FF007F, 3, 1.0, 0, 0);
 }
 
 .hiscore {
@@ -102,14 +102,15 @@
 }
 
 .lives {
-    -fx-fill: yellow;
+    -fx-fill: lightblue;
     -fx-font-family: 'Orbitron';
     -fx-font-size: 36px;
     -fx-font-weight: 700;
-    -fx-border-color: black;
-    -fx-stroke: black;
+    -fx-border-color: lightblue;
+    -fx-stroke: #00008B;
+    -fx-stroke-width: 1;
     -fx-text-alignment: center;
-    -fx-effect: dropshadow(gaussian, black, 1, 1.0, 1, 1);
+    -fx-effect: dropshadow(gaussian, #FF007F, 3, 1.0, 0, 0);
 }
 
 .scorelist {
@@ -210,12 +211,27 @@ TextField {
 /* --- Fix for Grid Visibility --- */
 
 .gameboard {
-    -fx-background-color: rgba(0, 0, 0, 0.4); /* Dark semi-transparent background for the whole grid area */
+    -fx-background-color: rgba(25, 25, 112, 0.5); /* light blue with 40% opacity background for the whole grid area */
 }
 
 .gameblock {
     -fx-border-color: rgba(255, 255, 255, 0.1); /* Very faint white border for each block */
     -fx-border-width: 1;
+}
+.menu-button {
+    -fx-background-color: rgba(173, 216, 230, 0.7); /* Light Blue, semi-transparent */
+    -fx-text-fill: white;
+    -fx-font-family: 'Orbitron';
+    -fx-font-size: 24px;
+    -fx-border-color: white;
+    -fx-border-width: 2px;
+    -fx-background-radius: 10; /* Rounded corners */
+    -fx-border-radius: 10;
+}
+
+.menu-button:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.9); /* White, semi-transparent on hover */
+    -fx-text-fill: #00008B; /* Dark Blue text on hover */
 }
 
 /* --- End of Fix --- */

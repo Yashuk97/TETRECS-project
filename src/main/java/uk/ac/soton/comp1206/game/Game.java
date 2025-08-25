@@ -97,7 +97,7 @@ public class Game {
         logger.info("Block clicked at ({}, {})", x, y);
 
         //checking if the piece can be played at this location
-        if (grid.canPlayPiece(currentPiece, x, y)){
+        if (grid.canPlayPiece(currentPiece, x, y)) {
             //if it can, then play the piece
             logger.info("Piece {} can be played at ({}, {})", currentPiece.toString(), x, y);
             grid.playPiece(currentPiece, x, y);
@@ -106,18 +106,8 @@ public class Game {
 
         } else {
             logger.info("Cannot play piece {} at ({}, {})", currentPiece.toString(), x, y);
-        //add sound if a piece fails to move
+            //add sound if a piece fails to move
         }
-
-        //Get the new value for this block
-        int previousValue = grid.get(x,y);
-        int newValue = previousValue + 1;
-        if (newValue  > GamePiece.PIECES) {
-            newValue = 0;
-        }
-
-        //Update the grid with the new value
-        grid.set(x,y,newValue);
     }
     /**
      * spawns a new random GamePiece

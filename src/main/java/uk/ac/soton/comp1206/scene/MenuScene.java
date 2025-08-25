@@ -3,6 +3,8 @@ package uk.ac.soton.comp1206.scene;
 import javafx.event.ActionEvent;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.text.Text;
 import org.apache.logging.log4j.LogManager;
@@ -40,10 +42,20 @@ public class MenuScene extends BaseScene {
         var menuPane = new StackPane();
         menuPane.setMaxWidth(gameWindow.getWidth());
         menuPane.setMaxHeight(gameWindow.getHeight());
-        menuPane.getStyleClass().add("menu-background");
+// menuPane.getStyleClass().add("menu-background"); // We no longer need this CSS class for the background
+
+// --- Add the animated background ---
+        var backgroundImage = new ImageView(new Image(getClass().getResource("/images/gif.gif").toExternalForm()));
+        backgroundImage.setFitWidth(gameWindow.getWidth());
+        backgroundImage.setFitHeight(gameWindow.getHeight());
+        backgroundImage.setPreserveRatio(false); // Stretch to fill
+        menuPane.getChildren().add(backgroundImage);
+// --- End of background section ---
+
         root.getChildren().add(menuPane);
 
         var mainPane = new BorderPane();
+        mainPane.setStyle("-fx-background-color: transparent;"); // Make mainPane see-through
         menuPane.getChildren().add(mainPane);
 
         // Awesome Title

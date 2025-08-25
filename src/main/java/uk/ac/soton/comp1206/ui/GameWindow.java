@@ -9,6 +9,7 @@ import javafx.stage.Stage;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import uk.ac.soton.comp1206.App;
+import uk.ac.soton.comp1206.game.Game;
 import uk.ac.soton.comp1206.network.Communicator;
 import uk.ac.soton.comp1206.scene.*;
 
@@ -59,6 +60,9 @@ public class GameWindow {
 
         //Go to menu
         startMenu();
+    }
+    public void startIntro() {
+        loadScene(new IntroScene(this));
     }
     public void startInstructions() {
         loadScene(new InstructionsScene(this));
@@ -130,6 +134,9 @@ public class GameWindow {
     public void cleanup() {
         logger.info("Clearing up previous scene");
         communicator.clearListeners();
+    }
+    public void startScores(Game game){
+    loadScene(new ScoresScene(this,game));
     }
 
     /**

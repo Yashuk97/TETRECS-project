@@ -31,22 +31,22 @@ public class GameBlock extends Canvas {
      * The set of colours for different pieces
      */
     public static final Color[] COLOURS = {
-            Color.TRANSPARENT,
-            Color.DEEPPINK,
-            Color.RED,
-            Color.ORANGE,
-            Color.YELLOW,
-            Color.YELLOWGREEN,
-            Color.LIME,
-            Color.GREEN,
-            Color.DARKGREEN,
-            Color.DARKTURQUOISE,
-            Color.DEEPSKYBLUE,
-            Color.AQUA,
-            Color.AQUAMARINE,
-            Color.BLUE,
-            Color.MEDIUMPURPLE,
-            Color.PURPLE
+        Color.TRANSPARENT,      // 0: Empty
+        Color.web("#00FFFF"), // 1: Electric Blue (Bright Teal)
+        Color.web("#FF007F"), // 2: Hot Pink (Rose)
+        Color.web("#FFD700"), // 3: Gold
+        Color.web("#DC143C"), // 4: Crimson Red
+        Color.web("#FF4500"), // 5: Bright Orange
+        Color.web("#FFFFFF"), // 6: White
+        Color.web("#00BFFF"), // 7: Electric Blue (Deep Sky Blue)
+        Color.web("#FF1493"), // 8: Hot Pink (Deep Pink)
+        Color.web("#F0E68C"), // 9: Gold (Khaki)
+        Color.web("#C71585"), // 10: Crimson Red (Medium Violet Red)
+        Color.web("#FFA500"), // 11: Bright Orange (Standard Orange)
+        Color.web("#F5F5F5"), // 12: White (White Smoke)
+        Color.web("#40E0D0"), // 13: Bright Teal (Turquoise)
+        Color.web("#FF69B4"), // 14: Hot Pink
+        Color.web("#DAA520")  // 15: Gold (GoldenRod)
     };
 
 
@@ -131,29 +131,32 @@ public class GameBlock extends Canvas {
             return;
         }
 
-        Color color = COLOURS[value.get()];
+        Color base = COLOURS[value.get()];
+        Color lighter = base.brighter();
+        Color darker = base.darker();
 
-        // 1. Fill the main block color first
-        gc.setFill(color);
+        // --- Create a metallic-looking gradient ---
+        LinearGradient gradient = new LinearGradient(0, 0, 1, 1, true, CycleMethod.NO_CYCLE,
+            new Stop(0, lighter),
+            new Stop(0.5, base),
+            new Stop(1, darker)
+        );
+
+        // 1. Fill the block with the gradient
+        gc.setFill(gradient);
         gc.fillRect(0, 0, width, height);
 
-        // 2. Draw darker shades for a 3D shadow effect
-        gc.setFill(color.darker());
-        gc.fillRect(0, height - 3, width, 3); // Bottom edge
-        gc.fillRect(width - 3, 0, 3, height); // Right edge
+        // 2. Draw a very dark border for definition
+        gc.setStroke(base.darker().darker());
+        gc.strokeRect(0, 0, width, height);
 
-        // 3. Draw lighter shades for a 3D highlight effect
-        gc.setFill(color.brighter());
-        gc.fillRect(0, 0, width, 3); // Top edge
-        gc.fillRect(0, 0, 3, height); // Left edge
 
-        // 4. Draw the hover effect last so it's on top
+        // --- Draw Hover and Center indicators as before ---
         if (isHover()) {
-            gc.setFill(Color.color(1, 1, 1, 0.5)); // White with 50% transparency
+            gc.setFill(Color.color(1, 1, 1, 0.4)); // White with 40% transparency
             gc.fillRect(0, 0, width, height);
         }
 
-        // 5. Draw a circle in the center if this is a center block
         if (isCenter) {
             gc.setFill(Color.color(1, 1, 1, 0.7)); // Semi-transparent white
             gc.fillOval(width / 4, height / 4, width / 2, height / 2);

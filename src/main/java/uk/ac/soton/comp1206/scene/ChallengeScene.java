@@ -4,6 +4,8 @@ import java.util.Set;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.*;
@@ -70,15 +72,24 @@ public class ChallengeScene extends BaseScene {
         // --- 1. Create the root and basic layout ---
         root = new GamePane(gameWindow.getWidth(), gameWindow.getHeight());
 
-        var challengePane = new StackPane();
-        challengePane.setMaxWidth(gameWindow.getWidth());
-        challengePane.setMaxHeight(gameWindow.getHeight());
-        challengePane.getStyleClass().add("challenge-background"); // Use a specific style
-        root.getChildren().add(challengePane);
+        var menuPane = new StackPane();
+        menuPane.setMaxWidth(gameWindow.getWidth());
+        menuPane.setMaxHeight(gameWindow.getHeight());
+// menuPane.getStyleClass().add("menu-background"); // We no longer need this CSS class for the background
 
-        // Use a BorderPane for easy layout management
+// --- Add the animated background ---
+        var backgroundImage = new ImageView(new Image(getClass().getResource("/images/ezgif.com-animated-gif-maker.gif").toExternalForm()));
+        backgroundImage.setFitWidth(gameWindow.getWidth());
+        backgroundImage.setFitHeight(gameWindow.getHeight());
+        backgroundImage.setPreserveRatio(false); // Stretch to fill
+        menuPane.getChildren().add(backgroundImage);
+// --- End of background section ---
+
+        root.getChildren().add(menuPane);
+
         var mainPane = new BorderPane();
-        challengePane.getChildren().add(mainPane);
+        mainPane.setStyle("-fx-background-color: transparent;"); // Make mainPane see-through
+        menuPane.getChildren().add(mainPane);
 
         // --- 2. Create and position the GameBoard ---
         board = new GameBoard(game.getGrid(), gameWindow.getWidth() / 2, gameWindow.getWidth() / 2);
@@ -145,37 +156,47 @@ public class ChallengeScene extends BaseScene {
     public void initialise() {
         logger.info("Initialising Challenge");
 
+        // --- Set up Listeners from Game to Scene ---
+
+        // Listen for the next piece from the game model
         game.setNextPieceListener(this::displayNextPiece);
 
-        //also display very first piece when game starts
-        displayNextPiece(game.getNextPiece());
+        // Listen for when lines are cleared to trigger animations
+        game.setLineClearedListener(this::onLineCleared);
+
+        // Listen for the game loop starting/resetting to animate the timer bar
+        game.setGameLoopListener(delay -> animateTimerBar(delay));
+
+        // Listen for the game over event
+        game.setGameOverListener(this::endGame);
+
+
+        // --- Set up Bindings from Game Properties to UI Labels ---
+
         // Bind the score label
         scoreLabel.textProperty().bind(Bindings.format("Score: %d", game.scoreProperty()));
 
-// Bind the level label
+        // Bind the level label
         levelLabel.textProperty().bind(Bindings.format("Level: %d", game.levelProperty()));
 
-// Bind the lives label
+        // Bind the lives label
         livesLabel.textProperty().bind(Bindings.format("Lives: %d", game.livesProperty()));
 
-// Bind the multiplier label
-        multiplierLabel.textProperty().bind(Bindings.format("Multiplier: %dx", game.multiplierProperty()));
-        scoreLabel.textProperty().bind(Bindings.format("Score: %d", game.scoreProperty()));
-        levelLabel.textProperty().bind(Bindings.format("Level: %d", game.levelProperty()));
-        livesLabel.textProperty().bind(Bindings.format("Lives: %d", game.livesProperty()));
+        // Bind the multiplier label
         multiplierLabel.textProperty().bind(Bindings.format("Multiplier: %dx", game.multiplierProperty()));
 
-        game.setNextPieceListener(this::displayNextPiece);
-        displayNextPiece(game.getNextPiece());
-        // Inside the initialise() method's key listener
 
-
-        game.setLineClearedListener(this::onLineCleared);
-        game.setGameLoopListener(delay -> animateTimerBar(delay));
-        // --- ADD KEYBOARD SUPPORT ---
+        // --- Set up Keyboard Input ---
         scene.setOnKeyPressed(this::handleKeyPress);
+
+
+        // --- Final Setup ---
+
+        // Display the very first piece when the game starts
+        displayNextPiece(game.getNextPiece());
+
+        // Start the game logic (including the first timer)
         game.start();
-        game.setGameOverListener(() -> endGame());
     }
     /**
      * Animates the timer bar based on the provided delay.
@@ -208,8 +229,9 @@ public class ChallengeScene extends BaseScene {
      * Called when the game is over.
      */
     private void endGame() {
-        logger.info("Ending game and returning to menu.");
-        gameWindow.startMenu();
+        logger.info("Game over. Opening scores screen.");
+        game.shutdown(); // Stop the game timer
+        gameWindow.startScores(game);
     }
     /**
      * Called when lines are cleared in the game. Triggers the fade-out animation.

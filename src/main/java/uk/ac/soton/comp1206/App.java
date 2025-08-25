@@ -40,27 +40,23 @@ public class App extends Application {
      * Called by JavaFX with the primary stage as a parameter. Begins the game by opening the Game Window
      * @param stage the default stage, main window
      */
+
     @Override
     public void start(Stage stage) {
         instance = this;
         this.stage = stage;
 
-        //Open game window
-        openGame();
-    }
+        //Create the GameWindow with the specified width and height
+        var gameWindow = new GameWindow(stage, width, height);
 
-    /**
-     * Create the GameWindow with the specified width and height
-     */
-    public void openGame() {
-        logger.info("Opening game window");
-
-        //Change the width and height in this class to change the base rendering resolution for all game parts
-        var gameWindow = new GameWindow(stage,width,height);
+        //Start the game by showing the intro scene
+        gameWindow.startIntro();
 
         //Display the GameWindow
         stage.show();
     }
+
+   
 
     /**
      * Shutdown the game
