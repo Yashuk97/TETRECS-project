@@ -42,7 +42,7 @@ public class IntroScene extends BaseScene {
 
     // --- Add your custom background image ---
     // Make sure you have an "intro_background.jpg" in your resources/images folder
-    var backgroundImage = new ImageView(new Image(getClass().getResource("/images/solid-navy-blue-background-simple-260nw-2089479046.jpg").toExternalForm()));
+    var backgroundImage = new ImageView(new Image(getClass().getResource("/images/space-14958_256.gif").toExternalForm()));
     backgroundImage.setFitWidth(gameWindow.getWidth());
     backgroundImage.setFitHeight(gameWindow.getHeight());
     introPane.getChildren().add(backgroundImage);
@@ -55,7 +55,7 @@ public class IntroScene extends BaseScene {
 
     // --- Set up the animations ---
     // 1. Drop from top animation
-    TranslateTransition drop = new TranslateTransition(Duration.seconds(2), welcomeText);
+    TranslateTransition drop = new TranslateTransition(Duration.seconds(4), welcomeText);
     drop.setFromY(-400); // Start 400 pixels above the center
     drop.setToY(0);      // End in the center
 

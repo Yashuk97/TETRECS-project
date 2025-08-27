@@ -37,27 +37,27 @@
 }
 
 .bigtitle {
-    -fx-fill: yellow;
-    -fx-font-family: 'Orbitron';
-    -fx-font-size: 64px;
+    -fx-fill: #288BA8;
+    -fx-font-family: 'Playfair Display';
+    -fx-font-size: 60px;
     -fx-font-weight: 900;
-    -fx-border-color: black;
-    -fx-stroke: black;
-    -fx-effect: dropshadow(gaussian, black, 1, 1.0, 1, 1);
+    -fx-border-color: lightblue;
+    -fx-stroke: white;
+    -fx-effect: dropshadow(gaussian, lavender, 1, 1.0, 1, 1);
 }
 
 .title {
     -fx-fill: white; /* Main text color */
     -fx-font-family: 'Orbitron';
-    -fx-font-size: 32px;
+    -fx-font-size: 80px;
     -fx-font-weight: 900;
     -fx-stroke: #00008B; /* Dark Blue outline */
-    -fx-stroke-width: 1.5;
-    -fx-effect: dropshadow(gaussian, #00FFFF, 2, 1.0, 0, 0);
+    -fx-stroke-width: 2;
+    -fx-effect: dropshadow(gaussian, #00FFFF, 10,0.7,0,0);
 }
 
 .heading {
-    -fx-fill: white;
+    -fx-fill: lightblue;
     -fx-font-family: 'Orbitron';
     -fx-font-size: 20px;
     -fx-font-weight: 700;
@@ -115,11 +115,14 @@
 
 .scorelist {
     -fx-font-size: 20px;
-    -fx-font-family: 'Orbitron';
+    -fx-font-family: 'Playfair Display';
 }
 
-.scoreitem {
-
+#localScores .scoreitem {
+    -fx-fill: white;
+}
+#remoteScores .scoreitem {
+    -fx-fill: white;
 }
 
 .scorer {
@@ -205,7 +208,7 @@ TextField {
 
 .instructions {
     -fx-font-size: 10px;
-    -fx-font-family: 'Orbitron';
+    -fx-font-family: 'Playfair Display';
     -fx-fill: white;
 }
 /* --- Fix for Grid Visibility --- */
@@ -232,6 +235,38 @@ TextField {
 .menu-button:hover {
     -fx-background-color: rgba(255, 255, 255, 0.9); /* White, semi-transparent on hover */
     -fx-text-fill: #00008B; /* Dark Blue text on hover */
+}
+.scores-title {
+    -fx-fill: #000000; /* Radium Pink - adjust hex code if needed */
+    -fx-font-family: 'Playfair Display'; /* We'll change this to Playfair Display next */
+    -fx-font-size: 80px; /* Make it bigger */
+    -fx-font-weight: 900;
+    -fx-stroke: white;
+    -fx-stroke-width: 1;
+}
+.game-info-box {
+    -fx-background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent black */
+    -fx-padding: 15px;
+    -fx-background-radius: 20; /* This creates the curved corners */
+    -fx-border-radius: 20;
+    -fx-border-color: white;
+    -fx-border-width: 1px;
+}
+.multiplier {
+    -fx-fill: #FF33A1; /* Radium Pink */
+    -fx-font-family: 'Orbitron';
+    -fx-font-size: 24px;
+    -fx-font-weight: 700;
+    -fx-stroke: black;
+    -fx-stroke-width: 1;
+}
+.sidebar-heading {
+    -fx-fill: #FF33A1; /* Radium Pink */
+    -fx-font-family: 'Orbitron';
+    -fx-font-size: 20px;
+    -fx-font-weight: 700;
+    -fx-stroke: black;
+    -fx-stroke-width: 1;
 }
 
 /* --- End of Fix --- */

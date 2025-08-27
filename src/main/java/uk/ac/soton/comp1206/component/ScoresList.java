@@ -9,8 +9,13 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.util.Pair;
 
+/**
+ * A custom UI component to display a list of scores.
+ * It automatically updates its display when the underlying list of scores changes.
+ */
 public class ScoresList extends VBox {
 
+  // A property to hold the list of scores.
   private final ListProperty<Pair<String, Integer>> scores = new SimpleListProperty<>();
 
   public ScoresList() {
@@ -18,13 +23,19 @@ public class ScoresList extends VBox {
     setSpacing(5);
     getStyleClass().add("scorelist");
 
-    // Add a listener to rebuild the list when the scores property changes
-    scores.addListener((ListChangeListener<Pair<String, Integer>>) c -> build());
+    // Add a listener to rebuild the visual list whenever the scores property is updated.
+    scores.addListener((ListChangeListener<Pair<String, Integer>>) c -> buildList());
   }
 
-  public void build() {
+  /**
+   * Clears and rebuilds the visual list of scores based on the current data.
+   */
+  private void buildList() {
     getChildren().clear();
     int counter = 1;
+
+    if (scores.get() == null) return; // Safety check
+
     for (Pair<String, Integer> scoreEntry : scores.get()) {
       Text scoreText = new Text(counter + ". " + scoreEntry.getKey() + ": " + scoreEntry.getValue());
       scoreText.getStyleClass().add("scoreitem");
@@ -33,10 +44,12 @@ public class ScoresList extends VBox {
     }
   }
 
+  // Standard getter for the property, needed for binding.
   public ListProperty<Pair<String, Integer>> scoresProperty() {
     return scores;
   }
 
+  // A convenience method to set the scores list.
   public void setScores(ObservableList<Pair<String, Integer>> scores) {
     this.scores.set(scores);
   }

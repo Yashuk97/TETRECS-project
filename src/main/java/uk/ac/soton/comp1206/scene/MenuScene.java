@@ -1,5 +1,6 @@
 package uk.ac.soton.comp1206.scene;
 
+import javafx.animation.TranslateTransition;
 import javafx.event.ActionEvent;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
@@ -7,6 +8,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.text.Text;
+import javafx.util.Duration;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import uk.ac.soton.comp1206.App;
@@ -45,7 +47,7 @@ public class MenuScene extends BaseScene {
 // menuPane.getStyleClass().add("menu-background"); // We no longer need this CSS class for the background
 
 // --- Add the animated background ---
-        var backgroundImage = new ImageView(new Image(getClass().getResource("/images/gif.gif").toExternalForm()));
+        var backgroundImage = new ImageView(new Image(getClass().getResource("/images/1641264230-origin.jpg").toExternalForm()));
         backgroundImage.setFitWidth(gameWindow.getWidth());
         backgroundImage.setFitHeight(gameWindow.getHeight());
         backgroundImage.setPreserveRatio(false); // Stretch to fill
@@ -77,6 +79,11 @@ public class MenuScene extends BaseScene {
 
         var exitButton = new Button("Exit");
         exitButton.getStyleClass().add("menu-button");
+
+        TranslateTransition drop = new TranslateTransition(Duration.millis(800), menuVBox);
+        drop.setFromY(-500); // Start 500 pixels above its final position
+        drop.setToY(0);      // Animate to its final position
+        drop.play();
 
         menuVBox.getChildren().addAll(singlePlayerButton, instructionsButton, exitButton);
 

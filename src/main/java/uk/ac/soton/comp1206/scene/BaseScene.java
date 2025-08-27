@@ -2,6 +2,7 @@ package uk.ac.soton.comp1206.scene;
 
 import javafx.scene.Scene;
 import javafx.scene.paint.Color;
+import uk.ac.soton.comp1206.network.Communicator;
 import uk.ac.soton.comp1206.ui.GamePane;
 import uk.ac.soton.comp1206.ui.GameWindow;
 
@@ -11,6 +12,7 @@ import uk.ac.soton.comp1206.ui.GameWindow;
 public abstract class BaseScene {
 
     protected final GameWindow gameWindow;
+    protected final Communicator communicator;
 
     protected GamePane root;
     protected Scene scene;
@@ -21,6 +23,7 @@ public abstract class BaseScene {
      */
     public BaseScene(GameWindow gameWindow) {
         this.gameWindow = gameWindow;
+        this.communicator = gameWindow.getCommunicator();
     }
 
     /**
@@ -38,11 +41,9 @@ public abstract class BaseScene {
      * @return JavaFX scene
      */
     public Scene setScene() {
-        var previous = gameWindow.getScene();
-        Scene scene = new Scene(root, previous.getWidth(), previous.getHeight(), Color.BLACK);
+        this.scene = new Scene(root,gameWindow.getWidth(),gameWindow.getHeight());
         scene.getStylesheets().add(getClass().getResource("/style/game.css").toExternalForm());
-        this.scene = scene;
-        return scene;
+        return this.scene;
     }
 
     /**

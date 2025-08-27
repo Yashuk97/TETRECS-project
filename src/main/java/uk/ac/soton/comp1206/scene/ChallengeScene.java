@@ -1,8 +1,11 @@
 package uk.ac.soton.comp1206.scene;
 
 import java.util.Set;
+import javafx.animation.FadeTransition;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
+import javafx.animation.ParallelTransition;
+import javafx.animation.ScaleTransition;
 import javafx.animation.Timeline;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -10,6 +13,7 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Text;
 import javafx.util.Duration;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -99,6 +103,7 @@ public class ChallengeScene extends BaseScene {
         var infoPane = new VBox();
         infoPane.setSpacing(10);
         infoPane.setAlignment(Pos.CENTER); // Center the labels within the VBox
+        infoPane.getStyleClass().add("game-info-box");
         mainPane.setRight(infoPane); // Place the info panel on the right
 
         // --- Create and position the Timer Bar ---
@@ -112,11 +117,13 @@ public class ChallengeScene extends BaseScene {
         levelLabel = new Label("Level: 0");
         livesLabel = new Label("Lives: 3");
         multiplierLabel = new Label("Multiplier: 1x");
+        multiplierLabel.getStyleClass().add("multiplier");
 
         // Add labels to the infoPane VBox
         infoPane.getChildren().addAll(scoreLabel, levelLabel, livesLabel, multiplierLabel);
 
         Label nextPieceLabel = new Label("Next Piece:");
+        nextPieceLabel.getStyleClass().add("sidebar-heading");
         nextPieceBoard = new PieceBoard();
         infoPane.getChildren().addAll(nextPieceLabel, nextPieceBoard);
 
@@ -229,9 +236,39 @@ public class ChallengeScene extends BaseScene {
      * Called when the game is over.
      */
     private void endGame() {
-        logger.info("Game over. Opening scores screen.");
+        logger.info("Game over. Starting animation.");
         game.shutdown(); // Stop the game timer
-        gameWindow.startScores(game);
+
+        // Create the "Game Over" text
+        Text gameOverText = new Text("Game Over");
+        gameOverText.getStyleClass().add("bigtitle"); // Use a big, bold style
+        gameOverText.setVisible(false); // Start invisible
+
+        // Add it to the center of the screen
+        // Note: root is a GamePane which extends StackPane
+        root.getChildren().add(gameOverText);
+
+        // --- Create Animations ---
+        // Fade in
+        FadeTransition fadeIn = new FadeTransition(Duration.seconds(3), gameOverText);
+        fadeIn.setFromValue(0);
+        fadeIn.setToValue(1);
+
+        // Scale up
+        ScaleTransition scaleUp = new ScaleTransition(Duration.seconds(3), gameOverText);
+        scaleUp.setFromX(0.5);
+        scaleUp.setFromY(0.5);
+        scaleUp.setToX(1.0);
+        scaleUp.setToY(1.0);
+
+        // Play both animations at the same time
+        ParallelTransition animation = new ParallelTransition(fadeIn, scaleUp);
+
+        // When the animation is finished, go to the scores screen
+        animation.setOnFinished(e -> gameWindow.startScores(game));
+
+        gameOverText.setVisible(true);
+        animation.play();
     }
     /**
      * Called when lines are cleared in the game. Triggers the fade-out animation.
