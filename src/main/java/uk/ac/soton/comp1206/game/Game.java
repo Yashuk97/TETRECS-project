@@ -29,6 +29,7 @@ public class Game {
 
     protected GamePiece currentPiece;
     protected GamePiece nextPiece;
+    protected GamePiece followingPiece;
     /**
      * Number of rows
      */
@@ -62,6 +63,9 @@ public class Game {
         this.cols = cols;
         this.rows = rows;
 
+        followingPiece = spawnPiece();
+        nextPiece = spawnPiece();
+        nextPiece();
         //Create a new grid model to represent the game state
         this.grid = new Grid(cols,rows);
         logger.info("New game created with size {}x{}", cols, rows);
@@ -127,12 +131,29 @@ public class Game {
      */
     public void nextPiece() {
         logger.info("Generating next piece");
-        currentPiece = nextPiece; // The old "next" is now the "current"
-        nextPiece = spawnPiece(); // Generate a new "next" piece
+        currentPiece = nextPiece;
+        nextPiece = followingPiece;
+        followingPiece = spawnPiece(); // Always keep the queue full
 
-        //notify listener that a new piece is ready
-        if(nextPieceListener != null){
-            nextPieceListener.onNextPiece(nextPiece);
+        if (nextPieceListener != null) {
+            nextPieceListener.onNextPiece(currentPiece, nextPiece);
+        }
+    }
+    /**
+     * Swaps the current piece with the following piece.
+     */
+    public void swapCurrentPiece() {
+        if (currentPiece != null && followingPiece != null) {
+            GamePiece temp = currentPiece;
+            currentPiece = followingPiece;
+            followingPiece = temp;
+
+            logger.info("Swapped current piece with following piece");
+
+            // Notify the UI of the change
+            if (nextPieceListener != null) {
+                nextPieceListener.onNextPiece(currentPiece, nextPiece);
+            }
         }
     }
     /**
@@ -339,7 +360,24 @@ public class Game {
             startTimer();
         }
     }
+    /**
+     * Rotates the current piece.
+     */
+    public void rotateCurrentPiece() {
+        if (currentPiece != null) {
+            currentPiece.rotate();
+            // We need a way to tell the UI that the piece has changed.
+            // The NextPieceListener is perfect for this, as it's already set up
+            // to update the preview boards.
+            if (nextPieceListener != null) {
+                nextPieceListener.onNextPiece(currentPiece, nextPiece); // We will update this listener
+            }
+        }
+    }
 
+    public GamePiece getCurrentPiece() {
+        return currentPiece;
+    }
     /**
      * Get the number of rows in this game
      * @return number of rows

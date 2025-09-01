@@ -38,10 +38,12 @@ public class ChallengeScene extends BaseScene {
     protected Game game;
     protected GameBoard board;
     private Rectangle timerBar;
-    private PieceBoard nextPieceBoard;
+  private PieceBoard currentPieceDisplay;
+  private PieceBoard nextPieceDisplay;
 
 
-    //coordinates for keyboard-controlled aim
+
+  //coordinates for keyboard-controlled aim
     private int aimX = 2;
     private int aimY = 2;
 
@@ -121,14 +123,16 @@ public class ChallengeScene extends BaseScene {
         multiplierLabel.getStyleClass().add("multiplier");
 
 
+      Label currentPieceLabel = new Label("Current Piece:");
+      currentPieceLabel.getStyleClass().add("sidebar-heading");
+      currentPieceDisplay = new PieceBoard();
+
+      Label nextPieceLabel = new Label("Next Piece:");
+      nextPieceLabel.getStyleClass().add("sidebar-heading");
+      nextPieceDisplay = new PieceBoard();
 
       // Add labels to the infoPane VBox
-        infoPane.getChildren().addAll(scoreLabel, levelLabel, livesLabel, multiplierLabel);
-
-        Label nextPieceLabel = new Label("Next Piece:");
-        nextPieceLabel.getStyleClass().add("sidebar-heading");
-        nextPieceBoard = new PieceBoard();
-        infoPane.getChildren().addAll(nextPieceLabel, nextPieceBoard);
+        infoPane.getChildren().addAll(scoreLabel, levelLabel, livesLabel, multiplierLabel, currentPieceLabel, currentPieceDisplay, nextPieceLabel, nextPieceDisplay);
 
         // Add styling to the labels
         scoreLabel.getStyleClass().add("score");
@@ -167,7 +171,7 @@ public class ChallengeScene extends BaseScene {
         // --- Set up Listeners from Game to Scene ---
 
         // Listen for the next piece from the game model
-        game.setNextPieceListener(this::displayNextPiece);
+        game.setNextPieceListener((current, next) -> displayNextPiece(current, next));
 
         // Listen for when lines are cleared to trigger animations
         game.setLineClearedListener(this::onLineCleared);
@@ -202,7 +206,7 @@ public class ChallengeScene extends BaseScene {
 
     // Display the very first piece if it already exists
       if (game.getNextPiece() != null) {
-        displayNextPiece(game.getNextPiece());
+        displayNextPiece(game.getCurrentPiece(), game.getNextPiece());
       }
         // Start the game logic (including the first timer)
         game.start();
@@ -333,6 +337,14 @@ public class ChallengeScene extends BaseScene {
             case X:
                 game.blockClicked(board.getBlock(aimX, aimY));
                 break;
+          case Q:
+          case E:
+            game.rotateCurrentPiece();
+            break;
+          case SPACE:
+          case R:
+            game.swapCurrentPiece();
+            break;
         }
 
         // After moving, update the visual hover effect
@@ -340,13 +352,16 @@ public class ChallengeScene extends BaseScene {
     }
     /**
      * Displays the next piece on the PieceBoard.
-     * @param piece the piece to display
+     * @param next the piece to display
      */
-    private void displayNextPiece(GamePiece piece) {
-
-      if (piece != null) {
-        nextPieceBoard.displayPiece(piece);
-      }    }
+    private void displayNextPiece(GamePiece current, GamePiece next) {
+      if (current != null) {
+        currentPieceDisplay.displayPiece(current);
+      }
+      if (next != null) {
+        nextPieceDisplay.displayPiece(next);
+      }
+    }
 
 
 }

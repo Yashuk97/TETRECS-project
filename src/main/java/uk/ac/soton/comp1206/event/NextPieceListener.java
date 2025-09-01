@@ -7,5 +7,5 @@ public interface NextPieceListener {
    * Called when a new piece is generated.
    * @param nextPiece the new piece
    */
-  void onNextPiece(GamePiece nextPiece);
+  void onNextPiece(GamePiece currentPiece, GamePiece nextPiece);
 }
