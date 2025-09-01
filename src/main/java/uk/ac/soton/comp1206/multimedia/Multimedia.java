@@ -4,6 +4,7 @@ import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import uk.ac.soton.comp1206.utility.Settings;
 
 /**
  * A utility class for managing and playing sound effects and music.
@@ -28,6 +29,8 @@ public class Multimedia {
       Media media = new Media(musicPath);
       musicPlayer = new MediaPlayer(media);
       musicPlayer.setCycleCount(MediaPlayer.INDEFINITE); // Loop forever
+
+      musicPlayer.volumeProperty().bind(Settings.musicVolume);
       musicPlayer.play();
       logger.info("Playing music: {}", musicFile);
     } catch (Exception e) {
@@ -54,6 +57,8 @@ public class Multimedia {
       String soundPath = Multimedia.class.getResource("/sounds/" + soundFile).toExternalForm();
       Media media = new Media(soundPath);
       soundPlayer = new MediaPlayer(media);
+
+      soundPlayer.volumeProperty().bind(Settings.sfxVolume);
       soundPlayer.play();
       logger.info("Playing sound: {}", soundFile);
     } catch (Exception e) {

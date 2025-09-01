@@ -148,6 +148,9 @@ public class GameWindow {
     loadScene(new ScoresScene(this,game));
     }
 
+    public void startSettings() {
+        loadScene(new SettingsScene(this));
+    }
     /**
      * Get the current scene being displayed
      * @return scene

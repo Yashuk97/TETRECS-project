@@ -88,6 +88,10 @@ public class MenuScene extends BaseScene {
         var exitButton = new Button("Exit");
         exitButton.getStyleClass().add("menu-button");
 
+        var settingsButton  = new Button("Settings");
+        settingsButton.getStyleClass().add("menu-button");
+        settingsButton.setPrefWidth(300);
+
         int buttonWidth = 300;
         singlePlayerButton.setPrefWidth(buttonWidth);
         multiplayerButton.setPrefWidth(buttonWidth);
@@ -99,7 +103,7 @@ public class MenuScene extends BaseScene {
         drop.setToY(0);      // Animate to its final position
         drop.play();
 
-        menuVBox.getChildren().addAll(singlePlayerButton, multiplayerButton, instructionsButton, exitButton);
+        menuVBox.getChildren().addAll(singlePlayerButton, multiplayerButton, instructionsButton, settingsButton, exitButton);
 
         // --- Button Actions ---
         singlePlayerButton.setOnAction(e -> {
@@ -114,6 +118,7 @@ public class MenuScene extends BaseScene {
             Multimedia.playSound("ui-button-click-8-341030.mp3");
             openInstructions(e);
         });
+        settingsButton.setOnAction(e -> gameWindow.startSettings());
         exitButton.setOnAction(event -> App.getInstance().shutdown());
 
         singlePlayerButton.setOnMouseEntered(e -> Multimedia.playSound("mixkit-water-bubble-1317.wav"));
