@@ -101,6 +101,7 @@ public class GameWindow {
         stage.setMinWidth(width);
         stage.setMinHeight(height + 20);
         stage.setOnCloseRequest(ev -> App.getInstance().shutdown());
+        stage.setFullScreen(false);
     }
 
     /**
@@ -108,6 +109,11 @@ public class GameWindow {
      * @param newScene new scene to load
      */
     public void loadScene(BaseScene newScene) {
+        // Shut down the current scene properly before cleanup
+        if (currentScene != null) {
+            logger.info("Shutting down previous scene: {}", currentScene.getClass().getName());
+            currentScene.shutdown();
+        }
         //Cleanup remains of the previous scene
         cleanup();
 
@@ -119,6 +125,9 @@ public class GameWindow {
 
         //Initialise the scene when ready
         Platform.runLater(() -> currentScene.initialise());
+    }
+    public void startLobby() {
+        loadScene(new LobbyScene(this));
     }
 
     /**
@@ -134,7 +143,6 @@ public class GameWindow {
      */
     public void cleanup() {
         logger.info("Clearing up previous scene");
-        communicator.clearListeners();
     }
     public void startScores(Game game){
     loadScene(new ScoresScene(this,game));
@@ -170,5 +178,11 @@ public class GameWindow {
      */
     public Communicator getCommunicator() {
         return communicator;
+    }
+    public void startGameOver(Game game) {
+        loadScene(new GameOverScene(this, game));
+    }
+    public void startMultiplayerGame() {
+        loadScene(new MultiplayerScene(this));
     }
 }

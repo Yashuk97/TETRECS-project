@@ -106,6 +106,13 @@ public class Communicator {
     public void clearListeners() {
         this.handlers.clear();
     }
+    /**
+     * Remove a previously added listener
+     * @param listener the listener to remove
+     */
+    public void removeListener(CommunicationsListener listener) {
+        this.handlers.remove(listener);
+    }
 
     /** Receive a message from the server. Relay to any attached listeners
      *

@@ -2,6 +2,7 @@ package uk.ac.soton.comp1206.scene;
 
 import javafx.scene.Scene;
 import javafx.scene.paint.Color;
+import uk.ac.soton.comp1206.multimedia.Multimedia;
 import uk.ac.soton.comp1206.network.Communicator;
 import uk.ac.soton.comp1206.ui.GamePane;
 import uk.ac.soton.comp1206.ui.GameWindow;
@@ -42,8 +43,16 @@ public abstract class BaseScene {
      */
     public Scene setScene() {
         this.scene = new Scene(root,gameWindow.getWidth(),gameWindow.getHeight());
+    this.scene.setFill(Color.BLACK);
         scene.getStylesheets().add(getClass().getResource("/style/game.css").toExternalForm());
         return this.scene;
+    }
+    /**
+     * Called when the scene is being shut down.
+     * Subclasses can override this to clean up resources like timers and listeners.
+     */
+    public void shutdown() {
+        Multimedia.stopMusic();
     }
 
     /**

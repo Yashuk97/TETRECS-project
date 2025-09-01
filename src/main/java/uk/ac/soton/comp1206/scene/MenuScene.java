@@ -7,11 +7,13 @@ import javafx.scene.control.Button;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
+import javafx.scene.media.MediaPlayer;
 import javafx.scene.text.Text;
 import javafx.util.Duration;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import uk.ac.soton.comp1206.App;
+import uk.ac.soton.comp1206.multimedia.Multimedia;
 import uk.ac.soton.comp1206.ui.GamePane;
 import uk.ac.soton.comp1206.ui.GameWindow;
 
@@ -22,6 +24,7 @@ public class MenuScene extends BaseScene {
 
     private static final Logger logger = LogManager.getLogger(MenuScene.class);
 
+    private static MediaPlayer musicPlayer;
     /**
      * Create a new menu scene
      * @param gameWindow the Game Window this will be displayed in
@@ -38,6 +41,8 @@ public class MenuScene extends BaseScene {
 
     public void build() {
         logger.info("Building " + this.getClass().getName());
+        Multimedia.playMusic("menu.mp3");
+
 
         root = new GamePane(gameWindow.getWidth(), gameWindow.getHeight());
 
@@ -74,23 +79,49 @@ public class MenuScene extends BaseScene {
         var singlePlayerButton = new Button("Single Player");
         singlePlayerButton.getStyleClass().add("menu-button");
 
+        var multiplayerButton = new Button("Multiplayer");
+        multiplayerButton.getStyleClass().add("menu-button");
+
         var instructionsButton = new Button("How to Play");
         instructionsButton.getStyleClass().add("menu-button");
 
         var exitButton = new Button("Exit");
         exitButton.getStyleClass().add("menu-button");
 
+        int buttonWidth = 300;
+        singlePlayerButton.setPrefWidth(buttonWidth);
+        multiplayerButton.setPrefWidth(buttonWidth);
+        instructionsButton.setPrefWidth(buttonWidth);
+        exitButton.setPrefWidth(buttonWidth);
+
         TranslateTransition drop = new TranslateTransition(Duration.millis(800), menuVBox);
         drop.setFromY(-500); // Start 500 pixels above its final position
         drop.setToY(0);      // Animate to its final position
         drop.play();
 
-        menuVBox.getChildren().addAll(singlePlayerButton, instructionsButton, exitButton);
+        menuVBox.getChildren().addAll(singlePlayerButton, multiplayerButton, instructionsButton, exitButton);
 
         // --- Button Actions ---
-        singlePlayerButton.setOnAction(this::startGame);
-        instructionsButton.setOnAction(this::openInstructions);
+        singlePlayerButton.setOnAction(e -> {
+            Multimedia.playSound("ui-button-click-8-341030.mp3");
+            startGame(e);
+        });
+        multiplayerButton.setOnAction(e-> {
+            Multimedia.playSound("ui-button-click-8-341030.mp3");
+            startLobby(e);
+        });
+        instructionsButton.setOnAction(e-> {
+            Multimedia.playSound("ui-button-click-8-341030.mp3");
+            openInstructions(e);
+        });
         exitButton.setOnAction(event -> App.getInstance().shutdown());
+
+        singlePlayerButton.setOnMouseEntered(e -> Multimedia.playSound("mixkit-water-bubble-1317.wav"));
+        multiplayerButton.setOnMouseEntered(e -> Multimedia.playSound("mixkit-water-bubble-1317.wav"));
+        instructionsButton.setOnMouseEntered(e -> Multimedia.playSound("mixkit-water-bubble-1317.wav"));
+        exitButton.setOnMouseEntered(e -> Multimedia.playSound("mixkit-water-bubble-1317.wav"));
+
+
     }
 
     /**
@@ -101,6 +132,9 @@ public class MenuScene extends BaseScene {
 
     }
 
+    private void startLobby(ActionEvent event) {
+        gameWindow.startLobby();
+    }
 
     /**
      * Handle when the Instructions button is pressed.

@@ -57,13 +57,11 @@
 }
 
 .heading {
-    -fx-fill: lightblue;
+    -fx-fill: pink;
     -fx-font-family: 'Orbitron';
     -fx-font-size: 20px;
     -fx-font-weight: 700;
-    -fx-border-color: black;
-    -fx-stroke: black;
-    -fx-effect: dropshadow(gaussian, #00FFFF, 2, 1.0, 0, 0);
+    -fx-stroke: lightblue;
 }
 
 .score {
@@ -174,11 +172,18 @@
 .scroller .viewport {
     -fx-background-color: transparent;
 }
+.player-name {
+    -fx-fill: white;
+    font-family: "Times New Roman", Times, serif;
+    -fx-font-weight: bold;
+    -fx-font-size: 20px;
+}
 
-.messages {
+.player-message {
+    font-family: "Times New Roman", Times, serif;
+    -fx-fill: #93c572;
     -fx-background-color: transparent;
-    -fx-font-size: 12px;
-    -fx-font-family: 'Orbitron';
+    -fx-font-size: 18px;
 }
 
 .messages Text {
@@ -252,20 +257,39 @@ TextField {
     -fx-border-color: white;
     -fx-border-width: 1px;
 }
-.multiplier {
-    -fx-fill: #FF33A1; /* Radium Pink */
+.multiplier .text, .sidebar-heading .text {
+    -fx-fill: white; /* Set the text color to white */
+    -fx-font-family: 'Orbitron';
+    -fx-font-weight: 700;
+    -fx-stroke: #00008B; /* Dark blue outline for clarity */
+    -fx-stroke-width: 0.5;
+}
+
+/* Adjust font size for each one individually */
+.multiplier .text {
+    -fx-font-size: 24px;
+}
+
+.sidebar-heading .text {
+    -fx-font-size: 20px;
+}
+.mul-button{
+    -fx-background-color: rgba(173, 216, 230, 0.7); /* Light Blue, semi-transparent */
+    -fx-text-fill: white;
     -fx-font-family: 'Orbitron';
     -fx-font-size: 24px;
-    -fx-font-weight: 700;
-    -fx-stroke: black;
-    -fx-stroke-width: 1;
+    -fx-border-color: white;
+    -fx-border-width: 2px;
+    -fx-background-radius: 9; /* Rounded corners */
+    -fx-border-radius: 10;
+
 }
-.sidebar-heading {
-    -fx-fill: #FF33A1; /* Radium Pink */
+.lobby-title {
+    -fx-fill: pink; /* Or any color you prefer */
     -fx-font-family: 'Orbitron';
-    -fx-font-size: 20px;
+    -fx-font-size: 48px; /* A good size for this title */
     -fx-font-weight: 700;
-    -fx-stroke: black;
+    -fx-stroke: lightblue;
     -fx-stroke-width: 1;
 }
 

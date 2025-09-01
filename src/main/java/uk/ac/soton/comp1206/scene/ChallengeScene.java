@@ -1,22 +1,20 @@
 package uk.ac.soton.comp1206.scene;
 
 import java.util.Set;
-import javafx.animation.FadeTransition;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
-import javafx.animation.ParallelTransition;
-import javafx.animation.ScaleTransition;
 import javafx.animation.Timeline;
+import javafx.beans.value.ChangeListener;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
-import javafx.scene.text.Text;
 import javafx.util.Duration;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import uk.ac.soton.comp1206.multimedia.Multimedia;
 import uk.ac.soton.comp1206.component.GameBlock;
 import uk.ac.soton.comp1206.component.GameBlockCoordinate;
 import uk.ac.soton.comp1206.component.GameBoard;
@@ -52,6 +50,7 @@ public class ChallengeScene extends BaseScene {
     private Label levelLabel;
     private Label livesLabel;
     private Label multiplierLabel;
+    private Timeline timeline;
 
     /**
      * Create a new Single Player challenge scene
@@ -69,6 +68,8 @@ public class ChallengeScene extends BaseScene {
     @Override
     public void build() {
         logger.info("Building " + this.getClass().getName());
+
+      Multimedia.playMusic("game_start.wav");
 
         // Call setupGame() first to make sure our `game` object exists
         setupGame();
@@ -119,7 +120,9 @@ public class ChallengeScene extends BaseScene {
         multiplierLabel = new Label("Multiplier: 1x");
         multiplierLabel.getStyleClass().add("multiplier");
 
-        // Add labels to the infoPane VBox
+
+
+      // Add labels to the infoPane VBox
         infoPane.getChildren().addAll(scoreLabel, levelLabel, livesLabel, multiplierLabel);
 
         Label nextPieceLabel = new Label("Next Piece:");
@@ -131,8 +134,6 @@ public class ChallengeScene extends BaseScene {
         scoreLabel.getStyleClass().add("score");
         levelLabel.getStyleClass().add("level");
         livesLabel.getStyleClass().add("lives"); // Let's add styles for these too
-        multiplierLabel.getStyleClass().add("multiplier");
-
         // --- 4. Set up event handling ---
         // Handle block on gameboard grid being clicked
         board.setOnBlockClick(this::blockClicked);
@@ -199,9 +200,10 @@ public class ChallengeScene extends BaseScene {
 
         // --- Final Setup ---
 
-        // Display the very first piece when the game starts
+    // Display the very first piece if it already exists
+      if (game.getNextPiece() != null) {
         displayNextPiece(game.getNextPiece());
-
+      }
         // Start the game logic (including the first timer)
         game.start();
     }
@@ -212,23 +214,49 @@ public class ChallengeScene extends BaseScene {
     private void animateTimerBar(int delay) {
         logger.info("Animating timer bar with delay: {}", delay);
 
-        // Create a timeline animation
-        Timeline timeline = new Timeline();
+        // Stop any existing animation before starting a new one
+        if (timeline != null) {
+            timeline.stop();
+        }
 
-        // Use .addAll() to add multiple KeyFrames at once
+        // Always start the bar as green and at full width
+        timerBar.setFill(Color.GREEN);
+        timerBar.setWidth(gameWindow.getWidth());
+
+        // Create a new timeline and assign it to the class field
+        timeline = new Timeline();
         timeline.getKeyFrames().addAll(
+            // KeyFrame 1: At the beginning (0 seconds), the width is the full window width.
             new KeyFrame(Duration.ZERO, new KeyValue(timerBar.widthProperty(), gameWindow.getWidth())),
+
+            // KeyFrame 2: At the end of the delay, the width is 0.
             new KeyFrame(new Duration(delay), new KeyValue(timerBar.widthProperty(), 0))
         );
 
-        // Change color based on urgency
-        if (delay <= 10000) {
-            timerBar.setFill(Color.RED);
-        } else if (delay <= 11000) {
-            timerBar.setFill(Color.ORANGE);
-        } else {
-            timerBar.setFill(Color.GREEN);
-        }
+        // --- DYNAMIC COLOR CHANGE LOGIC ---
+        // Calculate the width of the bar that corresponds to 3 seconds left
+        double redThreshold = (3000.0 / delay) * gameWindow.getWidth();
+        // Calculate the width for the orange threshold (e.g., 50% of the time)
+        double orangeThreshold = (0.5) * gameWindow.getWidth();
+
+        // Create a listener that watches the width property of the timer bar
+        ChangeListener<Number> widthListener = (obs, oldVal, newVal) -> {
+            if (newVal.doubleValue() <= redThreshold) {
+                timerBar.setFill(Color.RED);
+            } else if (newVal.doubleValue() <= orangeThreshold) {
+                timerBar.setFill(Color.ORANGE);
+            }
+        };
+
+        // Add the listener to the width property
+        timerBar.widthProperty().addListener(widthListener);
+
+        // --- CLEANUP ---
+        // When the animation is finished, we MUST remove the listener
+        // to prevent it from affecting the next timer bar.
+        timeline.setOnFinished(event -> {
+            timerBar.widthProperty().removeListener(widthListener);
+        });
 
         timeline.play();
     }
@@ -236,40 +264,30 @@ public class ChallengeScene extends BaseScene {
      * Called when the game is over.
      */
     private void endGame() {
-        logger.info("Game over. Starting animation.");
-        game.shutdown(); // Stop the game timer
-
-        // Create the "Game Over" text
-        Text gameOverText = new Text("Game Over");
-        gameOverText.getStyleClass().add("bigtitle"); // Use a big, bold style
-        gameOverText.setVisible(false); // Start invisible
-
-        // Add it to the center of the screen
-        // Note: root is a GamePane which extends StackPane
-        root.getChildren().add(gameOverText);
-
-        // --- Create Animations ---
-        // Fade in
-        FadeTransition fadeIn = new FadeTransition(Duration.seconds(3), gameOverText);
-        fadeIn.setFromValue(0);
-        fadeIn.setToValue(1);
-
-        // Scale up
-        ScaleTransition scaleUp = new ScaleTransition(Duration.seconds(3), gameOverText);
-        scaleUp.setFromX(0.5);
-        scaleUp.setFromY(0.5);
-        scaleUp.setToX(1.0);
-        scaleUp.setToY(1.0);
-
-        // Play both animations at the same time
-        ParallelTransition animation = new ParallelTransition(fadeIn, scaleUp);
-
-        // When the animation is finished, go to the scores screen
-        animation.setOnFinished(e -> gameWindow.startScores(game));
-
-        gameOverText.setVisible(true);
-        animation.play();
+      logger.info("Game over. Starting game over sequence.");
+      shutdown(); // Call our new shutdown method to stop music and timers
+      gameWindow.startGameOver(game);
     }
+  /**
+   * Called when this scene is shut down. This method should stop any timers,
+   * music, or listeners that are specific to this scene.
+   */
+  @Override
+  public void shutdown() {
+    logger.info("Shutting down challenge scene");
+
+    // Stop the game logic timer
+    game.shutdown();
+
+    // Stop any sounds that might be looping
+    Multimedia.stopTicking();
+    Multimedia.stopMusic();
+
+    // Stop the visual timer bar animation
+    if (timeline != null) {
+      timeline.stop();
+    }
+  }
     /**
      * Called when lines are cleared in the game. Triggers the fade-out animation.
      * @param clearedBlocks the set of blocks that were cleared
@@ -284,6 +302,10 @@ public class ChallengeScene extends BaseScene {
     private void handleKeyPress(KeyEvent event) {
         // First, check for system-level keys like ESCAPE
         if (event.getCode() == KeyCode.ESCAPE) {
+            // Stop the visual timer bar animation
+            if (timeline != null) {
+                timeline.stop();
+            }
             game.shutdown();
             gameWindow.startMenu();
             return; // Stop processing further
@@ -321,7 +343,10 @@ public class ChallengeScene extends BaseScene {
      * @param piece the piece to display
      */
     private void displayNextPiece(GamePiece piece) {
+
+      if (piece != null) {
         nextPieceBoard.displayPiece(piece);
-    }
+      }    }
+
 
 }

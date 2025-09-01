@@ -5,13 +5,13 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import javafx.animation.PauseTransition;
 import javafx.animation.RotateTransition;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleListProperty;
 import javafx.collections.ListChangeListener;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.BorderPane;
@@ -22,6 +22,7 @@ import javafx.scene.text.Text;
 import javafx.util.Duration;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import uk.ac.soton.comp1206.multimedia.Multimedia;
 import uk.ac.soton.comp1206.component.ScoresList;
 import uk.ac.soton.comp1206.game.Game;
 import uk.ac.soton.comp1206.ui.GamePane;
@@ -38,6 +39,7 @@ public class ScoresScene extends BaseScene {
   private ObservableList<Pair<String, Integer>> observableScores;
   private ObservableList<Pair<String, Integer>> remoteScores;
   private ListChangeListener<Pair<String, Integer>> scoreListener;
+  private boolean onlineScoresReceived = false;
 
   public ScoresScene(GameWindow gameWindow, Game game) {
     super(gameWindow);
@@ -60,6 +62,7 @@ public class ScoresScene extends BaseScene {
   @Override
   public void build() {
     logger.info("Building " + this.getClass().getName());
+    Multimedia.playMusic("end.wav");
 
     root = new GamePane(gameWindow.getWidth(), gameWindow.getHeight());
 
@@ -163,36 +166,49 @@ public class ScoresScene extends BaseScene {
    * Waits for remote scores to be loaded first.
    */
   private void checkAndPromptForScore() {
-    // Define the listener that will check scores once they arrive.
-    scoreListener = c -> {
-      // This will run ONCE when the scores first arrive from the server.
-      // We remove the listener immediately to prevent it from running again.
-      c.getList().removeListener(scoreListener);
+    // --- LOCAL SCORE CHECK (IMMEDIATE) ---
+    int lowestLocalScore = 0;
+    if (observableScores.size() >= 10) {
+      lowestLocalScore = observableScores.get(9).getValue();
+    }
+    boolean isLocalHighScore = (game.scoreProperty().get() > lowestLocalScore || observableScores.size() < 10);
 
-      // Now that we have the online scores, check if our score is a high score.
+    // --- ONLINE SCORE LISTENER ---
+    scoreListener = c -> {
+      onlineScoresReceived = true; // Set the flag to true
+      c.getList().removeListener(scoreListener); // Still remove the listener to prevent re-entry
+
       int lowestOnlineScore = 0;
       if (!remoteScores.isEmpty()) {
         lowestOnlineScore = remoteScores.get(remoteScores.size() - 1).getValue();
       }
+      boolean isOnlineHighScore = (game.scoreProperty().get() > lowestOnlineScore || remoteScores.size() < 10);
 
-      if (game.scoreProperty().get() > lowestOnlineScore || remoteScores.size() < 10) {
+      if (isOnlineHighScore) {
         logger.info("New ONLINE high score detected!");
         promptForName(true);
-      } else {
-        int lowestLocalScore = 0;
-        if (observableScores.size() >= 10) {
-          lowestLocalScore = observableScores.get(9).getValue();
-        }
-        if (game.scoreProperty().get() > lowestLocalScore || observableScores.size() < 10) {
-          logger.info("New LOCAL high score detected!");
+      } else if (isLocalHighScore) {
+        logger.info("New LOCAL high score detected (after online check)!");
+        promptForName(false);
+      }
+    };
+    remoteScores.addListener(scoreListener);
+
+    // --- FAILSAFE TIMER ---
+    PauseTransition failsafe = new PauseTransition(Duration.seconds(2));
+    failsafe.setOnFinished(e -> {
+      // After 2 seconds, check the flag.
+      if (!onlineScoresReceived) {
+        logger.warn("Online scores did not arrive in time. Checking local scores only.");
+        remoteScores.removeListener(scoreListener); // Clean up the listener
+        if (isLocalHighScore) {
           promptForName(false);
         }
       }
-    };
-
-    // Add the listener to the remoteScores list.
-    remoteScores.addListener(scoreListener);
+    });
+    failsafe.play();
   }
+
   /**
    * Displays the name input field and submit button.
    * @param isOnlineScore true if this score will be submitted online
@@ -218,6 +234,7 @@ public class ScoresScene extends BaseScene {
     // 8. Add handler for the ENTER key on the text field
     nameField.setOnKeyPressed(event -> {
       if (event.getCode() == KeyCode.ENTER) {
+        Multimedia.playSound("click-button-166324.mp3");
         String name = nameField.getText().isBlank() ? "Player" : nameField.getText();
         addNewScore(name, game.scoreProperty().get(), isOnlineScore);
         mainPane.setBottom(null); // Hide the input box after submitting

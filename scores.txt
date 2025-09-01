@@ -2,3 +2,4 @@ Yashu2:1800
 Yashu:900
 player2:300
 Player:0
+travis:0

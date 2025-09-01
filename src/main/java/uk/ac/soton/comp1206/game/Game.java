@@ -7,6 +7,7 @@ import javafx.application.Platform;
 import javafx.util.Duration;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import uk.ac.soton.comp1206.multimedia.Multimedia;
 import uk.ac.soton.comp1206.component.GameBlock;
 import uk.ac.soton.comp1206.component.GameBlockCoordinate;
 import javafx.beans.property.IntegerProperty;
@@ -26,8 +27,8 @@ public class Game {
 
     private static final Logger logger = LogManager.getLogger(Game.class);
 
-    private GamePiece currentPiece;
-    private GamePiece nextPiece;
+    protected GamePiece currentPiece;
+    protected GamePiece nextPiece;
     /**
      * Number of rows
      */
@@ -65,9 +66,9 @@ public class Game {
         this.grid = new Grid(cols,rows);
         logger.info("New game created with size {}x{}", cols, rows);
 
-        //start game with a piece
-        nextPiece = spawnPiece();
-        nextPiece();
+//        //start game with a piece
+//        nextPiece = spawnPiece();
+//        nextPiece();
     }
 
     /**
@@ -98,6 +99,7 @@ public class Game {
 
         //checking if the piece can be played at this location
         if (grid.canPlayPiece(currentPiece, x, y)) {
+            Multimedia.playSound("place.wav");
             //if it can, then play the piece
             logger.info("Piece {} can be played at ({}, {})", currentPiece.toString(), x, y);
             grid.playPiece(currentPiece, x, y);
@@ -141,6 +143,7 @@ public class Game {
         HashSet<GameBlockCoordinate> clearedBlocks = grid.clearLines();
 
         if (!clearedBlocks.isEmpty()) {
+            Multimedia.playSound("clear.wav");
             logger.info("Lines cleared! Animating {} blocks.", clearedBlocks.size());
 
             // Notify the listener to START the animation
@@ -194,7 +197,7 @@ public class Game {
      * @param linesCleared the number of lines cleared
      * @param blocksCleared the number of blocks cleared
      */
-    private void score(int linesCleared, int blocksCleared) {
+    protected void score(int linesCleared, int blocksCleared) {
         if (linesCleared > 0) {
             // Add points based on the formula
             int points = linesCleared * blocksCleared * 10 * multiplier.get();
@@ -293,27 +296,37 @@ public class Game {
     /**
      * The main game loop action. Called when the timer fires.
      */
-    private void gameLoop() {
+    protected void gameLoop() {
         logger.info("Game loop fired!");
 
         // Use Platform.runLater to make changes to JavaFX properties from a background thread
         Platform.runLater(() -> {
             // Decrement lives
             lives.set(lives.get() - 1);
+            Multimedia.playSound("lifelose.wav");
 
             // Check for game over
             if (lives.get() <= 0) {
                 logger.info("Game Over!");
-                gameLoopTimer.cancel(); // Stop the timer
+                if (gameLoopTimer != null) {
+                    gameLoopTimer.cancel(); // Stop the timer
+                }
                 if (gameOverListener != null) {
                     gameOverListener.onGameOver();
                 }
-                return;
+                return; // Stop processing
             }
 
             // Get the next piece and reset the multiplier
             nextPiece();
             multiplier.set(1);
+
+            // --- THIS IS THE FIX ---
+            // Notify the UI to restart the timer bar animation for the new piece/life
+            if (gameLoopListener != null) {
+                gameLoopListener.onGameLoop(getTimerDelay());
+            }
+            // --- END OF FIX ---
         });
     }
 
