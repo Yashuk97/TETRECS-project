@@ -1,17 +1,16 @@
 package uk.ac.soton.comp1206.scene;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.ArrayList;
 import javafx.animation.PauseTransition;
 import javafx.animation.RotateTransition;
 import javafx.application.Platform;
+import javafx.beans.binding.Bindings;
 import javafx.beans.property.SimpleListProperty;
+import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
+import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.BorderPane;
@@ -20,43 +19,62 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.util.Duration;
+import javafx.util.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import uk.ac.soton.comp1206.multimedia.Multimedia;
 import uk.ac.soton.comp1206.component.ScoresList;
+import uk.ac.soton.comp1206.event.CommunicationsListener;
 import uk.ac.soton.comp1206.game.Game;
+import uk.ac.soton.comp1206.game.MultiplayerGame;
+import uk.ac.soton.comp1206.multimedia.Multimedia;
 import uk.ac.soton.comp1206.ui.GamePane;
 import uk.ac.soton.comp1206.ui.GameWindow;
-import javafx.util.Pair;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
+import uk.ac.soton.comp1206.utility.Statistics;
+
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
+import javafx.scene.control.ScrollPane;
+
 
 public class ScoresScene extends BaseScene {
 
   private static final Logger logger = LogManager.getLogger(ScoresScene.class);
-  private final Game game; // To get the final score from
+  private final Game game;
+  private final boolean isMultiplayer;
 
   private ObservableList<Pair<String, Integer>> observableScores;
   private ObservableList<Pair<String, Integer>> remoteScores;
   private ListChangeListener<Pair<String, Integer>> scoreListener;
   private boolean onlineScoresReceived = false;
+  private BorderPane mainPane;
 
   public ScoresScene(GameWindow gameWindow, Game game) {
     super(gameWindow);
     this.game = game;
+    this.isMultiplayer = (game instanceof MultiplayerGame);
   }
 
   @Override
   public void initialise() {
-    // Add ESC key listener to go back to the menu
     scene.setOnKeyPressed(event -> {
-      if (event.getCode().toString().equals("ESCAPE")) {
+      if (event.getCode() == KeyCode.ESCAPE) {
         gameWindow.startMenu();
       }
     });
-    communicator.addListener(message -> {
-      Platform.runLater(() -> handleServerMessage(message));
-    });
+
+    // Only listen for online scores if it's a single player game
+    if (!isMultiplayer) {
+      communicator.addListener(this);
+    }
+  }
+
+  @Override
+  public void shutdown() {
+    // Remove listener when scene is shut down
+    communicator.removeListener(this);
   }
 
   @Override
@@ -72,63 +90,140 @@ public class ScoresScene extends BaseScene {
     scoresPane.getStyleClass().add("menu-background");
     root.getChildren().add(scoresPane);
 
-    var mainPane = new BorderPane();
-    scoresPane.getChildren().add(mainPane);
+    var scroller = new ScrollPane();
+    scroller.setFitToWidth(true);
+    scroller.setFitToHeight(true);
+    scroller.getStyleClass().add("scroller");
+    scoresPane.getChildren().add(scroller);
 
-    var title = new Text("High Scores");
+    mainPane = new BorderPane();
+    scroller.setContent(mainPane);
+
+    Text title = new Text(isMultiplayer ? "Multiplayer Results" : "High Scores");
     title.getStyleClass().add("scores-title");
     BorderPane.setAlignment(title, Pos.CENTER);
     mainPane.setTop(title);
 
     RotateTransition rotate = new RotateTransition(Duration.seconds(2), title);
-    rotate.setFromAngle(0);
-    rotate.setToAngle(360);
-    rotate.setCycleCount(1); // Play once
     rotate.play();
 
-    // --- Create a container for both local and remote score lists ---
     var scoresContainer = new HBox(20);
-    scoresContainer.setAlignment(Pos.CENTER);
+    scoresContainer.setAlignment(Pos.TOP_CENTER);
     mainPane.setCenter(scoresContainer);
 
-    // --- Local Scores List ---
     var localScoresList = new ScoresList();
     localScoresList.setId("localScores");
-    var localTitle = new Text("Local Scores");
+    var localTitle = new Text(isMultiplayer ? "Final Scores" : "Local Scores");
     localTitle.getStyleClass().add("heading");
     var localVBox = new VBox(10, localTitle, localScoresList);
-    localVBox.setAlignment(Pos.CENTER);
+    localVBox.setAlignment(Pos.TOP_CENTER);
+    scoresContainer.getChildren().add(localVBox);
 
-    // --- Remote Scores List ---
-    var remoteScoresList = new ScoresList();
-    remoteScoresList.setId("remoteScores");
-    var remoteTitle = new Text("Online Scores");
-    remoteTitle.getStyleClass().add("heading");
-    var remoteVBox = new VBox(10, remoteTitle, remoteScoresList);
-    remoteVBox.setAlignment(Pos.CENTER);
+    VBox bottomPane = new VBox(10);
+    bottomPane.setAlignment(Pos.CENTER);
+    mainPane.setBottom(bottomPane);
 
-    scoresContainer.getChildren().addAll(localVBox, remoteVBox);
+    var statsVBox = buildStatsPanel();
+    bottomPane.getChildren().add(statsVBox);
 
-    // --- Load local scores and bind them ---
-    ArrayList<Pair<String, Integer>> loadedScores = loadScores();
-    observableScores = FXCollections.observableArrayList(loadedScores);
-    localScoresList.scoresProperty().bind(new SimpleListProperty<>(observableScores));
+    if (isMultiplayer) {
+      title.setText("Multiplayer Results");
+      localScoresList.setId("multiplayerResults");
+      observableScores = FXCollections.observableArrayList(game.finalScores);
+      localScoresList.scoresProperty().bind(new SimpleListProperty<>(observableScores));
+    } else {
+      var remoteScoresList = new ScoresList();
+      remoteScoresList.setId("remoteScores");
+      var remoteTitle = new Text("Online Scores");
+      remoteTitle.getStyleClass().add("heading");
+      var remoteVBox = new VBox(10, remoteTitle, remoteScoresList);
+      remoteVBox.setAlignment(Pos.TOP_CENTER);
+      scoresContainer.getChildren().add(remoteVBox);
 
-    // --- Prepare remote scores list and bind it ---
-    remoteScores = FXCollections.observableArrayList();
-    remoteScoresList.scoresProperty().bind(new SimpleListProperty<>(remoteScores));
+      ArrayList<Pair<String, Integer>> loadedScores = loadScores();
+      observableScores = FXCollections.observableArrayList(loadedScores);
+      localScoresList.scoresProperty().bind(new SimpleListProperty<>(observableScores));
 
-    // Ask the server for the high scores
-    communicator.send("HISCORES");
+      remoteScores = FXCollections.observableArrayList();
+      remoteScoresList.scoresProperty().bind(new SimpleListProperty<>(remoteScores));
 
-    // Check if the player's score is a new high score
-    checkAndPromptForScore();
+      communicator.send("HISCORES");
+      checkAndPromptForScore();
+    }
+
+    Statistics.saveStats();
+  }
+
+  // Extracted stats panel building to its own method for clarity
+  private VBox buildStatsPanel() {
+    VBox statsVBox = new VBox(5);
+    statsVBox.setAlignment(Pos.CENTER);
+    statsVBox.setPadding(new Insets(10));
+
+    var statsTitle = new Text("Your Statistics");
+    statsTitle.getStyleClass().add("heading");
+
+    HBox gamesPlayedBox = new HBox(10);
+    // ... build HBox for gamesPlayed ...
+
+    HBox linesClearedBox = new HBox(10);
+    // ... build HBox for linesCleared ...
+
+    HBox highestScoreBox = new HBox(10);
+    // ... build HBox for highestScore ...
+
+    HBox highestMultiplierBox = new HBox(10);
+    // ... build HBox for highestMultiplier ...
+
+    statsVBox.getChildren().addAll(statsTitle, gamesPlayedBox, linesClearedBox, highestScoreBox, highestMultiplierBox);
+    return statsVBox;
+  }
+  /**
+   * Displays the name input field and submit button.
+   * @param isOnlineScore true if this score will be submitted online
+   */
+
+  private void promptForName(boolean isOnlineScore) {
+    // Get the bottom container VBox from the mainPane
+    VBox bottomPane = (VBox) mainPane.getBottom();
+
+    // Create the name input box
+    VBox inputBox = new VBox(10);
+    inputBox.setAlignment(Pos.CENTER);
+    inputBox.setPadding(new Insets(20));
+
+    Text promptText = new Text("Save your score by entering your name.");
+    promptText.getStyleClass().add("heading");
+
+    TextField nameField = new TextField();
+    nameField.setPromptText("Your Name");
+    nameField.setMaxWidth(300);
+
+    inputBox.getChildren().addAll(promptText, nameField);
+
+    // Add the input box to the bottom container (below the stats)
+    bottomPane.getChildren().add(inputBox);
+
+    // Add handler for the ENTER key
+    nameField.setOnKeyPressed(event -> {
+      if (event.getCode() == KeyCode.ENTER) {
+        Multimedia.playSound("save.wav"); // Use a suitable sound
+        String name = nameField.getText().isBlank() ? "Player" : nameField.getText();
+        addNewScore(name, game.scoreProperty().get(), isOnlineScore);
+
+        // Remove the input box, leaving the stats panel
+        bottomPane.getChildren().remove(inputBox);
+      }
+    });
+
+    Platform.runLater(nameField::requestFocus);
   }
   /**
    * Handles messages received from the server.
    * @param message the message from the server
    */
-  private void handleServerMessage(String message) {
+  @Override
+  public void receiveCommunication(String message) {
     logger.info("Received from server: {}", message);
 
     // Check if the message is a high scores list
@@ -210,43 +305,6 @@ public class ScoresScene extends BaseScene {
   }
 
   /**
-   * Displays the name input field and submit button.
-   * @param isOnlineScore true if this score will be submitted online
-   */
-  private void promptForName(boolean isOnlineScore) {
-    var mainPane = (BorderPane) ((StackPane) root.getChildren().get(0)).getChildren().get(0);
-
-    VBox inputBox = new VBox(10);
-    inputBox.setAlignment(Pos.CENTER);
-    inputBox.setPadding(new Insets(20));
-
-    // 7. Update the prompt text
-    Text promptText = new Text("Save your score by entering your name.");
-    promptText.getStyleClass().add("heading");
-
-    TextField nameField = new TextField();
-    nameField.setPromptText("Your Name");
-    nameField.setMaxWidth(300); // Give the text field a reasonable size
-
-    inputBox.getChildren().addAll(promptText, nameField);
-    mainPane.setBottom(inputBox);
-
-    // 8. Add handler for the ENTER key on the text field
-    nameField.setOnKeyPressed(event -> {
-      if (event.getCode() == KeyCode.ENTER) {
-        Multimedia.playSound("click-button-166324.mp3");
-        String name = nameField.getText().isBlank() ? "Player" : nameField.getText();
-        addNewScore(name, game.scoreProperty().get(), isOnlineScore);
-        mainPane.setBottom(null); // Hide the input box after submitting
-      }
-    });
-
-    // Request focus so the user can start typing immediately
-    Platform.runLater(nameField::requestFocus);
-  }
-
-
-  /**
    * Adds a new score to the list(s), saves, and optionally submits online.
    * @param name the player's name
    * @param score the player's score
@@ -306,4 +364,5 @@ public class ScoresScene extends BaseScene {
       logger.error("Failed to save scores: {}", e.getMessage());
     }
   }
+
 }

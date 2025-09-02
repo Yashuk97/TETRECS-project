@@ -40,12 +40,12 @@ public class GameOverScene extends BaseScene {
 
     // --- Animations ---
     // Fade in
-    FadeTransition fadeIn = new FadeTransition(Duration.seconds(4), gameOverText);
+    FadeTransition fadeIn = new FadeTransition(Duration.seconds(3), gameOverText);
     fadeIn.setFromValue(0);
     fadeIn.setToValue(1);
 
     // Scale up
-    ScaleTransition scaleUp = new ScaleTransition(Duration.seconds(4), gameOverText);
+    ScaleTransition scaleUp = new ScaleTransition(Duration.seconds(3), gameOverText);
     scaleUp.setFromX(0.5);
     scaleUp.setFromY(0.5);
     scaleUp.setToX(1.0);

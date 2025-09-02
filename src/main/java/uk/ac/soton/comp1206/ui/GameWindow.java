@@ -9,6 +9,7 @@ import javafx.stage.Stage;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import uk.ac.soton.comp1206.App;
+import uk.ac.soton.comp1206.event.CommunicationsListener;
 import uk.ac.soton.comp1206.game.Game;
 import uk.ac.soton.comp1206.network.Communicator;
 import uk.ac.soton.comp1206.scene.*;
@@ -57,9 +58,16 @@ public class GameWindow {
 
         //Setup communicator
         communicator = new Communicator("ws://ofb-labs.soton.ac.uk:9700");
+        communicator.addListener(message -> {
+            // Forward the message to the currently active scene, if it's listening
+            if (currentScene instanceof CommunicationsListener) {
+                // Run on FX thread to be safe
+                Platform.runLater(() -> ((CommunicationsListener) currentScene).receiveCommunication(message));
+            }
+        });
 
         //Go to menu
-        startMenu();
+        startIntro();
     }
     public void startIntro() {
         loadScene(new IntroScene(this));
@@ -115,7 +123,7 @@ public class GameWindow {
             currentScene.shutdown();
         }
         //Cleanup remains of the previous scene
-        cleanup();
+//        cleanup();
 
         //Create the new scene and set it up
         newScene.build();
@@ -138,12 +146,7 @@ public class GameWindow {
         stage.setScene(this.scene);
     }
 
-    /**
-     * When switching scenes, perform any cleanup needed, such as removing previous listeners
-     */
-    public void cleanup() {
-        logger.info("Clearing up previous scene");
-    }
+
     public void startScores(Game game){
     loadScene(new ScoresScene(this,game));
     }

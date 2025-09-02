@@ -2,6 +2,7 @@ package uk.ac.soton.comp1206.scene;
 
 import javafx.scene.Scene;
 import javafx.scene.paint.Color;
+import uk.ac.soton.comp1206.event.CommunicationsListener;
 import uk.ac.soton.comp1206.multimedia.Multimedia;
 import uk.ac.soton.comp1206.network.Communicator;
 import uk.ac.soton.comp1206.ui.GamePane;
@@ -10,7 +11,7 @@ import uk.ac.soton.comp1206.ui.GameWindow;
 /**
  * A Base Scene used in the game. Handles common functionality between all scenes.
  */
-public abstract class BaseScene {
+public abstract class BaseScene implements CommunicationsListener {
 
     protected final GameWindow gameWindow;
     protected final Communicator communicator;
@@ -62,5 +63,10 @@ public abstract class BaseScene {
     public Scene getScene() {
         return this.scene;
     }
+    @Override
+    public void receiveCommunication(String message) {
+        // By default, do nothing.
+    }
+
 
 }

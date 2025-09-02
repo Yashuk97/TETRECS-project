@@ -5,8 +5,12 @@ import javafx.beans.property.SimpleListProperty;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.geometry.Pos;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
+import javafx.scene.text.TextAlignment;
 import javafx.util.Pair;
 
 /**
@@ -24,25 +28,49 @@ public class ScoresList extends VBox {
     getStyleClass().add("scorelist");
 
     // Add a listener to rebuild the visual list whenever the scores property is updated.
-    scores.addListener((ListChangeListener<Pair<String, Integer>>) c -> buildList());
-  }
+    scores.addListener((ListChangeListener<Pair<String, Integer>>) c -> {
+      while (c.next()) {
+        // This block runs for any change: add, remove, update.
+        // The simplest way to handle all changes is to just rebuild the whole list.
+      }
+      buildList(); // Rebuild the visual list
+    });  }
 
   /**
    * Clears and rebuilds the visual list of scores based on the current data.
    */
-  private void buildList() {
+  public void buildList() {
     getChildren().clear();
     int counter = 1;
 
     if (scores.get() == null) return; // Safety check
 
     for (Pair<String, Integer> scoreEntry : scores.get()) {
-      Text scoreText = new Text(counter + ". " + scoreEntry.getKey() + ": " + scoreEntry.getValue());
-      scoreText.getStyleClass().add("scoreitem");
-      getChildren().add(scoreText);
+      // Create an HBox for each score entry
+      HBox scoreBox = new HBox();
+      scoreBox.setAlignment(Pos.CENTER);
+      scoreBox.setSpacing(5);
+
+      // Text for the rank and name
+      Text nameText = new Text(counter + ". " + scoreEntry.getKey() + ":");
+      nameText.getStyleClass().add("score-name");
+      nameText.setTextAlignment(TextAlignment.LEFT);
+
+      // Text for the score value
+      Text valueText = new Text(scoreEntry.getValue().toString());
+      valueText.getStyleClass().add("score-value");
+      valueText.setTextAlignment(TextAlignment.RIGHT);
+
+      // Use an empty Pane to push the name and value to opposite ends
+      Pane spacer = new Pane();
+      HBox.setHgrow(spacer, Priority.ALWAYS);
+
+      scoreBox.getChildren().addAll(nameText, spacer, valueText);
+      getChildren().add(scoreBox);
       counter++;
     }
   }
+
 
   // Standard getter for the property, needed for binding.
   public ListProperty<Pair<String, Integer>> scoresProperty() {

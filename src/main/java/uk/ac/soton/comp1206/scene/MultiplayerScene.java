@@ -71,4 +71,12 @@ public class MultiplayerScene extends ChallengeScene {
     var game = (MultiplayerGame) this.game;
     leaderboardList.itemsProperty().bind(game.getLeaderboardProperty());
   }
+
+  @Override
+  public void receiveCommunication(String message) {
+    // Forward network messages to the multiplayer game logic
+    if (game instanceof MultiplayerGame) {
+      ((MultiplayerGame) game).receiveCommunication(message);
+    }
+    }
 }

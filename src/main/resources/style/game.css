@@ -292,5 +292,63 @@ TextField {
     -fx-stroke: lightblue;
     -fx-stroke-width: 1;
 }
+/* Style for the heading text (e.g., "Games Played:") */
+.stats-heading .text {
+    -fx-fill: lightblue;
+    -fx-font-family: 'Orbitron';
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+}
+
+/* Style for the value text (e.g., "5") */
+.stats-item .text {
+    -fx-fill: pink;
+    -fx-font-family: 'Orbitron';
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+}
+/* Style for the name part of a score entry */
+.score-name {
+    -fx-font-family: 'Playfair Display';
+    -fx-font-size: 20px;
+}
+
+/* Style for the value part of a score entry */
+.score-value {
+    -fx-font-family: 'Playfair Display';
+    -fx-font-size: 20px;
+    -fx-font-weight: bold; /* Make the number stand out */
+}
+
+/* --- Different Colors for Local vs Online --- */
+
+/* Local Scores: Light Blue Name, White Value */
+#localScores .score-name {
+    -fx-fill: lightblue;
+}
+#localScores .score-value {
+    -fx-fill: pink;
+}
+
+/* Online Scores: Gold Name, White Value */
+#remoteScores .score-name {
+    -fx-fill: lightblue;
+}
+#remoteScores .score-value {
+    -fx-fill: pink;
+}
+/* Style for the final multiplayer results list */
+#multiplayerResults .score-name {
+    -fx-fill: white;
+    -fx-font-family: 'Playfair Display';
+    -fx-font-size: 24px;
+}
+
+#multiplayerResults .score-value {
+    -fx-fill: pink; /* Make the final score pop */
+    -fx-font-family: 'Playfair Display';
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+}
 
 /* --- End of Fix --- */

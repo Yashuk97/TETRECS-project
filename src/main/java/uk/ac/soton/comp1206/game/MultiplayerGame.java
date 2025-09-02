@@ -4,6 +4,7 @@ import javafx.application.Platform;
 import javafx.beans.property.ListProperty;
 import javafx.beans.property.SimpleListProperty;
 import javafx.collections.FXCollections;
+import javafx.util.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import uk.ac.soton.comp1206.event.CommunicationsListener;
@@ -19,21 +20,21 @@ public class MultiplayerGame extends Game {
   private CommunicationsListener listener; // Field to hold our listener
 
   public MultiplayerGame(int cols, int rows, Communicator communicator) {
-    super(cols, rows);
+    super(cols, rows, true);
     this.communicator = communicator;
     setupNetworking();
   }
 
   private void setupNetworking() {
     // Create and add the listener
-    listener = this::handleMessage;
+    listener = this::receiveCommunication;
     communicator.addListener(listener);
 
     requestPiece();
     requestPiece();
   }
 
-  private void handleMessage(String message) {
+  public void receiveCommunication(String message) {
     Platform.runLater(() -> {
       String[] parts = message.split(" ", 2);
       String command = parts[0];
@@ -57,8 +58,17 @@ public class MultiplayerGame extends Game {
     // When the game shuts down, remove its listener
     if (listener != null) {
       communicator.removeListener(listener);
+    }finalScores.clear();
+    for (String scoreLine : leaderboardProperty.get()) {
+      String[] parts = scoreLine.split(":");
+      String name = parts[0];
+      // Safely parse the score, ignoring the (X Lives) part
+      int score = Integer.parseInt(parts[1].trim().split(" ")[0]);
+      finalScores.add(new Pair<>(name, score));
     }
   }
+
+
 
   @Override
   public GamePiece spawnPiece() {
@@ -99,8 +109,18 @@ public class MultiplayerGame extends Game {
   private void updateLeaderboard(String data) {
     ArrayList<String> scores = new ArrayList<>();
     String[] lines = data.split("\n");
+
     for (String line : lines) {
-      scores.add(line.replace(":", ": "));
+      String[] parts = line.split(":");
+      if (parts.length == 3) { // Ensure we have all 3 parts
+        String name = parts[0];
+        String score = parts[1];
+        String lives = parts[2];
+
+        // Format the string for display
+        String status = lives.equals("DEAD") ? "DEAD" : lives + " Lives";
+        scores.add(name + ": " + score + " (" + status + ")");
+      }
     }
     leaderboardProperty.set(FXCollections.observableArrayList(scores));
   }

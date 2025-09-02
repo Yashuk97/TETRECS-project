@@ -7,6 +7,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ListView;
 import javafx.scene.control.ScrollPane;
@@ -52,9 +53,9 @@ public class LobbyScene extends BaseScene {
     listener = new CommunicationsListener() {
       @Override
       public void receiveCommunication(String message) {
-        Platform.runLater(() -> handleMessage(message));
+        Platform.runLater(() -> receiveCommunication(message));
       }
-    };    communicator.addListener(listener);
+    };
 
     // Start a timer to request the channel list periodically
     startChannelListTimer();
@@ -67,7 +68,8 @@ public class LobbyScene extends BaseScene {
     });
   }
 
-  private void handleMessage(String message) {
+  @Override
+  public void receiveCommunication(String message) {
     logger.info("Lobby received message: {}", message);
     String[] parts = message.split(" ", 2);
     String command = parts[0];
@@ -97,7 +99,17 @@ public class LobbyScene extends BaseScene {
       case "START": // The game is starting for everyone
         startGame();
         break;
+      case "ERROR":
+        showError("Server Error", data);
+        break;
     }
+  }
+  private void showError(String title, String message) {
+    Alert alert = new Alert(Alert.AlertType.ERROR);
+    alert.setTitle("Error");
+    alert.setHeaderText(title);
+    alert.setContentText(message);
+    alert.showAndWait();
   }
 
   private void startGame() {
@@ -298,19 +310,6 @@ public class LobbyScene extends BaseScene {
     }
   }
 
-  /**
-   * Shuts down the lobby scene, stopping timers and removing listeners.
-   */
 
-  @Override
-  public void shutdown() {
-    if (channelTimer != null) {
-      channelTimer.cancel();
-      channelTimer = null;
-    }
-    if (listener != null) {
-      communicator.removeListener(listener);
-    }
-    logger.info("Lobby has been shut down.");
-  }
+
 }

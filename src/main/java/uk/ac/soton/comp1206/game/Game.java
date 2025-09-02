@@ -1,10 +1,12 @@
 package uk.ac.soton.comp1206.game;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Random;
 import javafx.animation.PauseTransition;
 import javafx.application.Platform;
 import javafx.util.Duration;
+import javafx.util.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import uk.ac.soton.comp1206.multimedia.Multimedia;
@@ -18,6 +20,7 @@ import uk.ac.soton.comp1206.event.LineClearedListener;
 import uk.ac.soton.comp1206.event.NextPieceListener;
 import java.util.Timer;
 import java.util.TimerTask;
+import uk.ac.soton.comp1206.utility.Statistics;
 
 /**
  * The Game class handles the main logic, state and properties of the TetrECS game. Methods to manipulate the game state
@@ -38,6 +41,8 @@ public class Game {
     private GameLoopListener gameLoopListener;
     private Timer gameLoopTimer;
     private NextPieceListener nextPieceListener;
+    public ArrayList<Pair<String, Integer>> finalScores = new ArrayList<>();
+
 
     /**
      * Number of columns
@@ -60,21 +65,29 @@ public class Game {
      * @param rows number of rows
      */
     public Game(int cols, int rows) {
-        this.cols = cols;
-        this.rows = rows;
+        // Call the protected constructor to handle the core initialization
+        this(cols, rows, false);
 
+        // --- SINGLE PLAYER PIECE INITIALIZATION ---
+        // This logic is specific to single-player mode.
         followingPiece = spawnPiece();
         nextPiece = spawnPiece();
-        nextPiece();
-        //Create a new grid model to represent the game state
-        this.grid = new Grid(cols,rows);
-        logger.info("New game created with size {}x{}", cols, rows);
-
-//        //start game with a piece
-//        nextPiece = spawnPiece();
-//        nextPiece();
+        currentPiece = spawnPiece();
     }
 
+    /**
+     * Create a new game with the specified rows and columns. Does not generate pieces.
+     * Used by MultiplayerGame.
+     * @param cols number of columns
+     * @param rows number of rows
+     */
+    protected Game(int cols, int rows, boolean multiplayer) {
+        this.cols = cols;
+        this.rows = rows;
+        this.grid = new Grid(cols,rows);
+        logger.info("New multiplayer game created with size {}x{}", cols, rows);
+        Statistics.gamesPlayed.set(Statistics.gamesPlayed.get() + 1);
+    }
     /**
      * Start the game
      */
@@ -135,6 +148,7 @@ public class Game {
         nextPiece = followingPiece;
         followingPiece = spawnPiece(); // Always keep the queue full
 
+        // Notify the UI that both the current and next pieces have changed
         if (nextPieceListener != null) {
             nextPieceListener.onNextPiece(currentPiece, nextPiece);
         }
@@ -226,9 +240,17 @@ public class Game {
 
             // Increase the multiplier for the next successful clear
             multiplier.set(multiplier.get() + 1);
+
+            Statistics.linesCleared.set(Statistics.linesCleared.get() + linesCleared);
+            if (multiplier.get() > Statistics.highestMultiplier.get()) {
+                Statistics.highestMultiplier.set(multiplier.get());
+            }
         } else {
             // If no lines were cleared, reset the multiplier
             multiplier.set(1);
+        }
+        if (score.get() > Statistics.highestScore.get()) {
+            Statistics.highestScore.set(score.get());
         }
 
         // Update the level based on the score
