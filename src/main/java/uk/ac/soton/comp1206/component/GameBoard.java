@@ -6,7 +6,9 @@ import javafx.scene.layout.GridPane;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import uk.ac.soton.comp1206.event.BlockClickedListener;
+import uk.ac.soton.comp1206.event.RightclickedListener;
 import uk.ac.soton.comp1206.game.Grid;
+import uk.ac.soton.comp1206.multimedia.Multimedia;
 
 /**
  * A GameBoard is a visual component to represent the visual GameBoard.
@@ -53,6 +55,7 @@ public class GameBoard extends GridPane {
      * The blocks inside the grid
      */
     private final GameBlock[][] blocks;
+    private RightclickedListener rightclickedListener;
 
     /**
      * The listener to call when a specific block is clicked
@@ -205,7 +208,7 @@ public class GameBoard extends GridPane {
      */
     private void blockClicked(MouseEvent event, GameBlock block) {
         logger.info("Block clicked: {}", block);
-
+        Multimedia.playSound("place.wav");
         if(blockClickedListener != null) {
             blockClickedListener.blockClicked(block);
         }
@@ -225,7 +228,16 @@ public class GameBoard extends GridPane {
         //Add a mouse click handler to the block to trigger GameBoard's click handler
         block.setOnMouseClicked((e) -> blockClicked(e, block));
 
+        block.setOnContextMenuRequested(e -> {
+            if (rightclickedListener != null) {
+                rightclickedListener.onRightClick();
+            }
+        });
+
         return block;
+    }
+    public void setOnRightClicked(RightclickedListener listener) {
+        this.rightclickedListener = listener;
     }
 
 }

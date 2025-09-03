@@ -71,7 +71,7 @@ public class ChallengeScene extends BaseScene {
     public void build() {
         logger.info("Building " + this.getClass().getName());
 
-      Multimedia.playMusic("game_start.wav");
+      Multimedia.playMusic("maingame.mp3");
 
         // Call setupGame() first to make sure our `game` object exists
         setupGame();
@@ -126,6 +126,7 @@ public class ChallengeScene extends BaseScene {
       Label currentPieceLabel = new Label("Current Piece:");
       currentPieceLabel.getStyleClass().add("sidebar-heading");
       currentPieceDisplay = new PieceBoard();
+      currentPieceDisplay.setOnMouseClicked(e -> game.rotateCurrentPiece());
 
       Label nextPieceLabel = new Label("Next Piece:");
       nextPieceLabel.getStyleClass().add("sidebar-heading");
@@ -141,6 +142,7 @@ public class ChallengeScene extends BaseScene {
         // --- 4. Set up event handling ---
         // Handle block on gameboard grid being clicked
         board.setOnBlockClick(this::blockClicked);
+        board.setOnRightClicked(() -> game.rotateCurrentPiece());
     }
 
     /**

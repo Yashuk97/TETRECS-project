@@ -39,33 +39,32 @@ public class ScoresList extends VBox {
   /**
    * Clears and rebuilds the visual list of scores based on the current data.
    */
-  public void buildList() {
+  private void buildList() {
     getChildren().clear();
     int counter = 1;
 
-    if (scores.get() == null) return; // Safety check
+    if (scores.get() == null) return;
 
     for (Pair<String, Integer> scoreEntry : scores.get()) {
       // Create an HBox for each score entry
       HBox scoreBox = new HBox();
       scoreBox.setAlignment(Pos.CENTER);
-      scoreBox.setSpacing(5);
+      scoreBox.setSpacing(20); // Add a fixed space between name and value
+      scoreBox.setMaxWidth(300); // ** Constrain the width **
 
       // Text for the rank and name
       Text nameText = new Text(counter + ". " + scoreEntry.getKey() + ":");
       nameText.getStyleClass().add("score-name");
-      nameText.setTextAlignment(TextAlignment.LEFT);
 
       // Text for the score value
       Text valueText = new Text(scoreEntry.getValue().toString());
       valueText.getStyleClass().add("score-value");
-      valueText.setTextAlignment(TextAlignment.RIGHT);
 
-      // Use an empty Pane to push the name and value to opposite ends
-      Pane spacer = new Pane();
-      HBox.setHgrow(spacer, Priority.ALWAYS);
+      // We no longer need the spacer
+      // Pane spacer = new Pane();
+      // HBox.setHgrow(spacer, Priority.ALWAYS);
 
-      scoreBox.getChildren().addAll(nameText, spacer, valueText);
+      scoreBox.getChildren().addAll(nameText, valueText); // Just the name and value
       getChildren().add(scoreBox);
       counter++;
     }

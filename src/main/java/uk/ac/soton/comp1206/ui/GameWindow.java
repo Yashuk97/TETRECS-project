@@ -86,6 +86,7 @@ public class GameWindow {
         Font.loadFont(getClass().getResourceAsStream("/style/Orbitron-Regular.ttf"),32);
         Font.loadFont(getClass().getResourceAsStream("/style/Orbitron-Bold.ttf"),32);
         Font.loadFont(getClass().getResourceAsStream("/style/Orbitron-ExtraBold.ttf"),32);
+        Font.loadFont(getClass().getResourceAsStream("/style/Roboto-Regular.ttf"), 16);
         Font.loadFont(getClass().getResourceAsStream("/style/PlayfairDisplay-VariableFont_wght.ttf"), 32);
     }
 

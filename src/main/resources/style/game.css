@@ -1,5 +1,5 @@
 .gamepane {
-    -fx-background-color: black;
+    -fx-background-color: #000000;
 }
 
 .intro {
@@ -37,38 +37,33 @@
 }
 
 .bigtitle {
-    -fx-fill: #288BA8;
-    -fx-font-family: 'Playfair Display';
-    -fx-font-size: 60px;
+    -fx-fill: #E0E0E0;
+    -fx-font-family: 'Orbitron';
+    -fx-font-size: 50px;
     -fx-font-weight: 900;
-    -fx-border-color: lightblue;
-    -fx-stroke: white;
-    -fx-effect: dropshadow(gaussian, lavender, 1, 1.0, 1, 1);
+    -fx-effect: dropshadow(gaussian, #00CFFF, 15, 0.7, 0, 0);
 }
 
 .title {
-    -fx-fill: white; /* Main text color */
+    -fx-fill: #E0E0E0; /* Main text color */
     -fx-font-family: 'Orbitron';
-    -fx-font-size: 80px;
-    -fx-font-weight: 900;
-    -fx-stroke: #00008B; /* Dark Blue outline */
-    -fx-stroke-width: 2;
-    -fx-effect: dropshadow(gaussian, #00FFFF, 10,0.7,0,0);
+    -fx-font-size: 55px;
+    -fx-font-weight: 700;
+    -fx-effect: dropshadow(gaussian, #9D4EDD, 10,0.6,0,0);
 }
 
 .heading {
-    -fx-fill: pink;
+    -fx-fill: #9D4EDD;
     -fx-font-family: 'Orbitron';
-    -fx-font-size: 20px;
-    -fx-font-weight: 700;
-    -fx-stroke: lightblue;
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
 }
 
 .score {
-    -fx-fill: white;
+    -fx-fill: #E0E0E0;
     -fx-font-family: 'Orbitron';
-    -fx-font-size: 36px;
-    -fx-font-weight: 700;
+    -fx-font-size: 32px;
+    -fx-font-weight: bold;
     -fx-border-color: black;
     -fx-stroke: #00008B;
     -fx-stroke-width: 1;
@@ -102,7 +97,7 @@
 .lives {
     -fx-fill: lightblue;
     -fx-font-family: 'Orbitron';
-    -fx-font-size: 36px;
+    -fx-font-size: 32px;
     -fx-font-weight: 700;
     -fx-border-color: lightblue;
     -fx-stroke: #00008B;
@@ -173,15 +168,15 @@
     -fx-background-color: transparent;
 }
 .player-name {
-    -fx-fill: white;
-    font-family: "Times New Roman", Times, serif;
+    -fx-fill: #00FFCC;
+    font-family: 'Roboto';
     -fx-font-weight: bold;
     -fx-font-size: 20px;
 }
 
 .player-message {
-    font-family: "Times New Roman", Times, serif;
-    -fx-fill: #93c572;
+    font-family: 'Roboto';
+    -fx-fill: #E0E0E0;
     -fx-background-color: transparent;
     -fx-font-size: 18px;
 }
@@ -191,11 +186,12 @@
 }
 
 TextField {
-    -fx-border-color: white;
+    -fx-border-color: #9D4EDD;
     -fx-border-width: 1px;
-    -fx-background-color: rgba(0,0,0,0.5);
-    -fx-text-fill: white;
+    -fx-background-color: rgba(13, 27, 42, 0.5);
+    -fx-text-fill: #E0E0E0;
     -fx-prompt-text-fill: grey;
+    -fx-font-family: 'Orbitron';
 }
 
 .playerBox {
@@ -212,14 +208,14 @@ TextField {
 }
 
 .instructions {
-    -fx-font-size: 10px;
-    -fx-font-family: 'Playfair Display';
-    -fx-fill: white;
+    -fx-font-size: 18px;
+    -fx-font-family: 'Roboto';
+    -fx-fill: pink;
 }
 /* --- Fix for Grid Visibility --- */
 
 .gameboard {
-    -fx-background-color: rgba(25, 25, 112, 0.5); /* light blue with 40% opacity background for the whole grid area */
+    -fx-background-color: rgba(0, 0, 0, 0.5); /* light blue with 40% opacity background for the whole grid area */
 }
 
 .gameblock {
@@ -227,23 +223,24 @@ TextField {
     -fx-border-width: 1;
 }
 .menu-button {
-    -fx-background-color: rgba(173, 216, 230, 0.7); /* Light Blue, semi-transparent */
-    -fx-text-fill: white;
+    -fx-background-color: rgba(13, 27, 42, 0.7); /* Light Blue, semi-transparent */
+    -fx-text-fill: #E0E0E0;
     -fx-font-family: 'Orbitron';
     -fx-font-size: 24px;
-    -fx-border-color: white;
+    -fx-border-color: #9D4EDD;
     -fx-border-width: 2px;
     -fx-background-radius: 10; /* Rounded corners */
     -fx-border-radius: 10;
 }
 
 .menu-button:hover {
-    -fx-background-color: rgba(255, 255, 255, 0.9); /* White, semi-transparent on hover */
-    -fx-text-fill: #00008B; /* Dark Blue text on hover */
+    -fx-background-color: rgba(157, 78, 221, 0.8); /* White, semi-transparent on hover */
+    -fx-text-fill: white; /* Dark Blue text on hover */
+    -fx-border-color: white;
 }
 .scores-title {
-    -fx-fill: #000000; /* Radium Pink - adjust hex code if needed */
-    -fx-font-family: 'Playfair Display'; /* We'll change this to Playfair Display next */
+    -fx-fill: #E0E0E0;
+    -fx-font-family: 'Orbitron'; /* We'll change this to Playfair Display next */
     -fx-font-size: 80px; /* Make it bigger */
     -fx-font-weight: 900;
     -fx-stroke: white;
@@ -259,6 +256,7 @@ TextField {
 }
 .multiplier .text, .sidebar-heading .text {
     -fx-fill: white; /* Set the text color to white */
+    -fx-font-size: 24px;
     -fx-font-family: 'Orbitron';
     -fx-font-weight: 700;
     -fx-stroke: #00008B; /* Dark blue outline for clarity */
@@ -285,37 +283,35 @@ TextField {
 
 }
 .lobby-title {
-    -fx-fill: pink; /* Or any color you prefer */
+    -fx-fill: #E0E0E0; /* Or any color you prefer */
     -fx-font-family: 'Orbitron';
     -fx-font-size: 48px; /* A good size for this title */
-    -fx-font-weight: 700;
-    -fx-stroke: lightblue;
-    -fx-stroke-width: 1;
+    -fx-effect: dropshadow(gaussian, #9D4EDD, 10, 0.6, 0, 0);
 }
 /* Style for the heading text (e.g., "Games Played:") */
 .stats-heading .text {
-    -fx-fill: lightblue;
-    -fx-font-family: 'Orbitron';
+    -fx-fill: #9D4EDD;
+    -fx-font-family: 'Roboto';
     -fx-font-size: 18px;
     -fx-font-weight: bold;
 }
 
 /* Style for the value text (e.g., "5") */
 .stats-item .text {
-    -fx-fill: pink;
-    -fx-font-family: 'Orbitron';
+    -fx-fill: #E0E0E0;
+    -fx-font-family: 'Roboto';
     -fx-font-size: 16px;
     -fx-font-weight: bold;
 }
 /* Style for the name part of a score entry */
 .score-name {
-    -fx-font-family: 'Playfair Display';
+    -fx-font-family: 'Roboto';
     -fx-font-size: 20px;
 }
 
 /* Style for the value part of a score entry */
 .score-value {
-    -fx-font-family: 'Playfair Display';
+    -fx-font-family: 'Roboto';
     -fx-font-size: 20px;
     -fx-font-weight: bold; /* Make the number stand out */
 }
@@ -324,18 +320,18 @@ TextField {
 
 /* Local Scores: Light Blue Name, White Value */
 #localScores .score-name {
-    -fx-fill: lightblue;
+    -fx-fill: #00CFFF;
 }
 #localScores .score-value {
-    -fx-fill: pink;
+    -fx-fill: #E0E0E0;
 }
 
 /* Online Scores: Gold Name, White Value */
 #remoteScores .score-name {
-    -fx-fill: lightblue;
+    -fx-fill: #FFD700;
 }
 #remoteScores .score-value {
-    -fx-fill: pink;
+    -fx-fill: #E0E0E0;
 }
 /* Style for the final multiplayer results list */
 #multiplayerResults .score-name {

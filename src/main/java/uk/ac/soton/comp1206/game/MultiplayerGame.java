@@ -58,17 +58,23 @@ public class MultiplayerGame extends Game {
     // When the game shuts down, remove its listener
     if (listener != null) {
       communicator.removeListener(listener);
+
     }finalScores.clear();
-    for (String scoreLine : leaderboardProperty.get()) {
-      String[] parts = scoreLine.split(":");
-      String name = parts[0];
-      // Safely parse the score, ignoring the (X Lives) part
-      int score = Integer.parseInt(parts[1].trim().split(" ")[0]);
-      finalScores.add(new Pair<>(name, score));
+    if (leaderboardProperty.get() != null){
+      for (String scoreLine : leaderboardProperty.get()) {
+        try {
+          String[] nameAndScoreParts = scoreLine.split(":");
+          String name = nameAndScoreParts[0];
+          // Safely parse the score, ignoring the (X Lives) part
+          int score = Integer.parseInt(nameAndScoreParts[1].trim().split(" ")[0]);
+          finalScores.add(new Pair<>(name, score));
+
+        } catch (Exception e){
+          logger.error("Failed to parse final score line: {}", scoreLine, e);
+        }
+      }
     }
   }
-
-
 
   @Override
   public GamePiece spawnPiece() {

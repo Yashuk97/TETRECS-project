@@ -2,6 +2,7 @@ package uk.ac.soton.comp1206.scene;
 
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
@@ -30,11 +31,13 @@ public class InstructionsScene extends BaseScene {
   @Override
   public void initialise() {
     // Setup keyboard listener for ESC key to go back to the menu
-    getScene().setOnKeyPressed(event -> {
-      if (event.getCode().toString().equals("ESCAPE")) {
-        gameWindow.startMenu();
-      }
-    });
+    getScene()
+        .setOnKeyPressed(
+            event -> {
+              if (event.getCode().toString().equals("ESCAPE")) {
+                gameWindow.startMenu();
+              }
+            });
   }
 
   @Override
@@ -48,8 +51,16 @@ public class InstructionsScene extends BaseScene {
     instructionsPane.getStyleClass().add("menu-background");
     root.getChildren().add(instructionsPane);
 
+    // --- WRAP IN A SCROLLPANE ---
+    var scroller = new ScrollPane();
+    scroller.setFitToWidth(true);
+    scroller.setFitToHeight(true);
+    scroller.getStyleClass().add("scroller"); // Makes it transparent
+    instructionsPane.getChildren().add(scroller);
+
     var mainPane = new BorderPane();
-    instructionsPane.getChildren().add(mainPane);
+    scroller.setContent(mainPane); // Put the BorderPane inside the scroller
+    mainPane.setPadding(new Insets(20));
 
     // Title
     var title = new Text("Instructions");
@@ -58,22 +69,26 @@ public class InstructionsScene extends BaseScene {
     BorderPane.setAlignment(title, Pos.CENTER);
 
     // Instructions Text
-    var instructionsText = new Text("TetrECS is a fast-paced block placement game.\n\n" +
-        "Place pieces on the 5x5 grid to clear horizontal and vertical lines.\n\n" +
-        "The more lines you clear at once, the more points you get!\n\n" +
-        "Clearing lines consecutively builds your score multiplier.\n\n" +
-        "Don't let the timer run out, or you'll lose a life!\n\n" +
-        "Lose 3 lives, and it's game over.");
+    var instructionsText =
+        new Text(
+            "TetrECS is a fast-paced block placement game.\n\n"
+                + "Place pieces on the 5x5 grid to clear horizontal and vertical lines.\n\n"
+                + "The more lines you clear at once, the more points you get!\n\n"
+                + "Clearing lines consecutively builds your score multiplier.\n\n"
+                + "Don't let the timer run out, or you'll lose a life!\n\n"
+                + "Lose 3 lives, and it's game over.");
     instructionsText.getStyleClass().add("instructions");
     mainPane.setCenter(instructionsText);
+    BorderPane.setAlignment(instructionsText, Pos.TOP_CENTER);
+    BorderPane.setMargin(instructionsText, new Insets(20));
 
     // Piece Display
     var piecesTitle = new Text("Game Pieces");
     piecesTitle.getStyleClass().add("heading");
 
     GridPane pieceGrid = new GridPane();
-    pieceGrid.setHgap(10);
-    pieceGrid.setVgap(10);
+    pieceGrid.setHgap(12);
+    pieceGrid.setVgap(12);
     pieceGrid.setAlignment(Pos.CENTER);
 
     int counter = 0;
@@ -88,9 +103,8 @@ public class InstructionsScene extends BaseScene {
 
     VBox piecesBox = new VBox(20);
     piecesBox.setAlignment(Pos.CENTER);
-    piecesBox.setPadding(new Insets(10));
     piecesBox.getChildren().addAll(piecesTitle, pieceGrid);
 
     mainPane.setBottom(piecesBox);
   }
-}
+  }

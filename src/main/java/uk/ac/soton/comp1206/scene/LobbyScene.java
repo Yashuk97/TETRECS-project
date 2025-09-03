@@ -196,6 +196,7 @@ public class LobbyScene extends BaseScene {
   @Override
   public void build() {
     logger.info("Building " + this.getClass().getName());
+    Multimedia.playMusic("multiplayer.mp3");
     root = new GamePane(gameWindow.getWidth(), gameWindow.getHeight());
 
     lobbyPane = new StackPane();
@@ -300,6 +301,7 @@ public class LobbyScene extends BaseScene {
     messageField.setOnAction(e -> sendMessage(messageField));
     startButton.setOnAction(e -> communicator.send("START"));
     leaveButton.setOnAction(e -> communicator.send("PART"));
+
   }
 
   private void sendMessage(TextField field) {
@@ -308,6 +310,20 @@ public class LobbyScene extends BaseScene {
       communicator.send("MSG " + message);
       field.clear();
     }
+
+  }
+  // In LobbyScene.java
+  @Override
+  public void shutdown() {
+    if (channelTimer != null) {
+      channelTimer.cancel();
+      channelTimer = null;
+    }
+    if (listener != null) {
+      communicator.removeListener(listener);
+    }
+    Multimedia.stopMusic(); // <-- ADD THIS LINE
+    logger.info("Lobby has been shut down.");
   }
 
 

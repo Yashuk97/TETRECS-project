@@ -107,19 +107,28 @@ public class MenuScene extends BaseScene {
 
         // --- Button Actions ---
         singlePlayerButton.setOnAction(e -> {
-            Multimedia.playSound("ui-button-click-8-341030.mp3");
+            Multimedia.playSound("click-button-166324.mp3");
             startGame(e);
         });
         multiplayerButton.setOnAction(e-> {
-            Multimedia.playSound("ui-button-click-8-341030.mp3");
+            Multimedia.playSound("click-button-166324.mp3");
             startLobby(e);
         });
         instructionsButton.setOnAction(e-> {
-            Multimedia.playSound("ui-button-click-8-341030.mp3");
+            Multimedia.playSound("click-button-166324.mp3");
             openInstructions(e);
         });
-        settingsButton.setOnAction(e -> gameWindow.startSettings());
-        exitButton.setOnAction(event -> App.getInstance().shutdown());
+        settingsButton.setOnAction(e -> {
+            Multimedia.playSound("click-button-166324.mp3");
+            gameWindow.startSettings();
+        });
+        exitButton.setOnAction(e -> {
+            Multimedia.playSound("click-button-166324.mp3");
+            App.getInstance().shutdown();
+        });
+
+//        settingsButton.setOnAction(e -> gameWindow.startSettings());
+//        exitButton.setOnAction(event -> App.getInstance().shutdown());
 
         singlePlayerButton.setOnMouseEntered(e -> Multimedia.playSound("mixkit-water-bubble-1317.wav"));
         multiplayerButton.setOnMouseEntered(e -> Multimedia.playSound("mixkit-water-bubble-1317.wav"));

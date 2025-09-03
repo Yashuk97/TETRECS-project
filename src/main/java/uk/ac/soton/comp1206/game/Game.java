@@ -116,7 +116,6 @@ public class Game {
 
         //checking if the piece can be played at this location
         if (grid.canPlayPiece(currentPiece, x, y)) {
-            Multimedia.playSound("place.wav");
             //if it can, then play the piece
             logger.info("Piece {} can be played at ({}, {})", currentPiece.toString(), x, y);
             grid.playPiece(currentPiece, x, y);
@@ -125,6 +124,7 @@ public class Game {
 
         } else {
             logger.info("Cannot play piece {} at ({}, {})", currentPiece.toString(), x, y);
+            Multimedia.playSound("fail.wav");
             //add sound if a piece fails to move
         }
     }
@@ -387,6 +387,7 @@ public class Game {
      */
     public void rotateCurrentPiece() {
         if (currentPiece != null) {
+            Multimedia.playSound("rotate.wav");
             currentPiece.rotate();
             // We need a way to tell the UI that the piece has changed.
             // The NextPieceListener is perfect for this, as it's already set up

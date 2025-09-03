@@ -31,22 +31,22 @@ public class GameBlock extends Canvas {
      * The set of colours for different pieces
      */
     public static final Color[] COLOURS = {
-        Color.TRANSPARENT,      // 0: Empty
-        Color.web("#00FFFF"), // 1: Electric Blue (Bright Teal)
-        Color.web("#FF007F"), // 2: Hot Pink (Rose)
-        Color.web("#FFD700"), // 3: Gold
-        Color.web("#DC143C"), // 4: Crimson Red
-        Color.web("#FF4500"), // 5: Bright Orange
-        Color.web("#FFFFFF"), // 6: White
-        Color.web("#00BFFF"), // 7: Electric Blue (Deep Sky Blue)
-        Color.web("#FF1493"), // 8: Hot Pink (Deep Pink)
-        Color.web("#F0E68C"), // 9: Gold (Khaki)
-        Color.web("#C71585"), // 10: Crimson Red (Medium Violet Red)
-        Color.web("#FFA500"), // 11: Bright Orange (Standard Orange)
-        Color.web("#F5F5F5"), // 12: White (White Smoke)
-        Color.web("#40E0D0"), // 13: Bright Teal (Turquoise)
-        Color.web("#FF69B4"), // 14: Hot Pink
-        Color.web("#DAA520")  // 15: Gold (GoldenRod)
+        Color.TRANSPARENT,          // 0: Empty
+        Color.web("#00CFFF"),     // 1: Electric Blue
+        Color.web("#FF007F"),     // 2: Hot Pink
+        Color.web("#00FFCC"),     // 3: Bright Teal
+        Color.web("#FFD700"),     // 4: Gold
+        Color.web("#DC143C"),     // 5: Crimson Red
+        Color.web("#FF6F00"),     // 6: Bright Orange
+        Color.web("#E0E0E0"),     // 7: White / Silver
+        Color.web("#4DCFFF"),     // 8: Lighter Electric Blue
+        Color.web("#FF4DA6"),     // 9: Lighter Hot Pink
+        Color.web("#66FFD9"),     // 10: Lighter Bright Teal
+        Color.web("#FFDF4D"),     // 11: Lighter Gold
+        Color.web("#E44B66"),     // 12: Lighter Crimson Red
+        Color.web("#FF994D"),     // 13: Lighter Bright Orange
+        Color.web("#CCCCCC"),     // 14: Darker White / Silver
+        Color.web("#9D4EDD")      // 15: Neon Purple Accent
     };
 
 

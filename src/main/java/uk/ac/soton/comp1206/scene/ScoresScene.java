@@ -99,7 +99,7 @@ public class ScoresScene extends BaseScene {
     mainPane = new BorderPane();
     scroller.setContent(mainPane);
 
-    Text title = new Text(isMultiplayer ? "Multiplayer Results" : "High Scores");
+    Text title = new Text(); // Title text will be set below
     title.getStyleClass().add("scores-title");
     BorderPane.setAlignment(title, Pos.CENTER);
     mainPane.setTop(title);
@@ -107,18 +107,7 @@ public class ScoresScene extends BaseScene {
     RotateTransition rotate = new RotateTransition(Duration.seconds(2), title);
     rotate.play();
 
-    var scoresContainer = new HBox(20);
-    scoresContainer.setAlignment(Pos.TOP_CENTER);
-    mainPane.setCenter(scoresContainer);
-
-    var localScoresList = new ScoresList();
-    localScoresList.setId("localScores");
-    var localTitle = new Text(isMultiplayer ? "Final Scores" : "Local Scores");
-    localTitle.getStyleClass().add("heading");
-    var localVBox = new VBox(10, localTitle, localScoresList);
-    localVBox.setAlignment(Pos.TOP_CENTER);
-    scoresContainer.getChildren().add(localVBox);
-
+    // --- Build and place the bottom panel (stats and maybe name prompt) ---
     VBox bottomPane = new VBox(10);
     bottomPane.setAlignment(Pos.CENTER);
     mainPane.setBottom(bottomPane);
@@ -126,26 +115,54 @@ public class ScoresScene extends BaseScene {
     var statsVBox = buildStatsPanel();
     bottomPane.getChildren().add(statsVBox);
 
+    // --- Handle Multiplayer vs Single Player Layout and Logic ---
     if (isMultiplayer) {
+      // --- MULTIPLAYER LAYOUT ---
       title.setText("Multiplayer Results");
-      localScoresList.setId("multiplayerResults");
+
+      var finalScoresList = new ScoresList();
+      finalScoresList.setId("multiplayerResults");
+      var finalScoresTitle = new Text("Final Scores");
+      finalScoresTitle.getStyleClass().add("heading");
+
+      var finalScoresVBox = new VBox(10, finalScoresTitle, finalScoresList);
+      finalScoresVBox.setAlignment(Pos.CENTER);
+      finalScoresVBox.setPadding(new Insets(20));
+
+      mainPane.setCenter(finalScoresVBox); // Place in the CENTER
+
       observableScores = FXCollections.observableArrayList(game.finalScores);
-      localScoresList.scoresProperty().bind(new SimpleListProperty<>(observableScores));
+      finalScoresList.setScores(observableScores);
+
     } else {
+      // --- SINGLE-PLAYER LAYOUT ---
+      title.setText("High Scores");
+
+      var localScoresList = new ScoresList();
+      localScoresList.setId("localScores");
+      var localTitle = new Text("Local Scores");
+      localTitle.getStyleClass().add("heading");
+      var localVBox = new VBox(10, localTitle, localScoresList);
+      localVBox.setAlignment(Pos.CENTER);
+      localVBox.setPadding(new Insets(20));
+      mainPane.setLeft(localVBox); // Place on the LEFT
+
       var remoteScoresList = new ScoresList();
       remoteScoresList.setId("remoteScores");
       var remoteTitle = new Text("Online Scores");
       remoteTitle.getStyleClass().add("heading");
       var remoteVBox = new VBox(10, remoteTitle, remoteScoresList);
-      remoteVBox.setAlignment(Pos.TOP_CENTER);
-      scoresContainer.getChildren().add(remoteVBox);
+      remoteVBox.setAlignment(Pos.CENTER);
+      remoteVBox.setPadding(new Insets(20));
+      mainPane.setRight(remoteVBox); // Place on the RIGHT
 
+      // Load and set data for both lists
       ArrayList<Pair<String, Integer>> loadedScores = loadScores();
       observableScores = FXCollections.observableArrayList(loadedScores);
-      localScoresList.scoresProperty().bind(new SimpleListProperty<>(observableScores));
+      localScoresList.setScores(observableScores);
 
       remoteScores = FXCollections.observableArrayList();
-      remoteScoresList.scoresProperty().bind(new SimpleListProperty<>(remoteScores));
+      remoteScoresList.setScores(remoteScores);
 
       communicator.send("HISCORES");
       checkAndPromptForScore();
@@ -155,27 +172,63 @@ public class ScoresScene extends BaseScene {
   }
 
   // Extracted stats panel building to its own method for clarity
+  /**
+   * Creates and returns a VBox containing the full statistics display panel.
+   * @return A VBox with all the statistics UI elements.
+   */
   private VBox buildStatsPanel() {
-    VBox statsVBox = new VBox(5);
+    // Main container for the entire stats section
+    VBox statsVBox = new VBox(10); // Spacing between title and individual stat lines
     statsVBox.setAlignment(Pos.CENTER);
-    statsVBox.setPadding(new Insets(10));
+    statsVBox.setPadding(new Insets(20));
 
+    // Title for the panel
     var statsTitle = new Text("Your Statistics");
     statsTitle.getStyleClass().add("heading");
 
-    HBox gamesPlayedBox = new HBox(10);
-    // ... build HBox for gamesPlayed ...
+    // -- Games Played Stat --
+    HBox gamesPlayedBox = new HBox(10); // Spacing between heading and value
+    gamesPlayedBox.setAlignment(Pos.CENTER);
+    Label gamesPlayedHeading = new Label("Games Played:");
+    gamesPlayedHeading.getStyleClass().add("stats-heading");
+    Label gamesPlayedValue = new Label();
+    gamesPlayedValue.getStyleClass().add("stats-item");
+    gamesPlayedValue.textProperty().bind(Statistics.gamesPlayed.asString());
+    gamesPlayedBox.getChildren().addAll(gamesPlayedHeading, gamesPlayedValue);
 
+    // -- Lines Cleared Stat --
     HBox linesClearedBox = new HBox(10);
-    // ... build HBox for linesCleared ...
+    linesClearedBox.setAlignment(Pos.CENTER);
+    Label linesClearedHeading = new Label("Total Lines Cleared:");
+    linesClearedHeading.getStyleClass().add("stats-heading");
+    Label linesClearedValue = new Label();
+    linesClearedValue.getStyleClass().add("stats-item");
+    linesClearedValue.textProperty().bind(Statistics.linesCleared.asString());
+    linesClearedBox.getChildren().addAll(linesClearedHeading, linesClearedValue);
 
+    // -- Highest Score Stat --
     HBox highestScoreBox = new HBox(10);
-    // ... build HBox for highestScore ...
+    highestScoreBox.setAlignment(Pos.CENTER);
+    Label highestScoreHeading = new Label("Highest Score:");
+    highestScoreHeading.getStyleClass().add("stats-heading");
+    Label highestScoreValue = new Label();
+    highestScoreValue.getStyleClass().add("stats-item");
+    highestScoreValue.textProperty().bind(Statistics.highestScore.asString());
+    highestScoreBox.getChildren().addAll(highestScoreHeading, highestScoreValue);
 
+    // -- Highest Multiplier Stat --
     HBox highestMultiplierBox = new HBox(10);
-    // ... build HBox for highestMultiplier ...
+    highestMultiplierBox.setAlignment(Pos.CENTER);
+    Label highestMultiplierHeading = new Label("Highest Multiplier:");
+    highestMultiplierHeading.getStyleClass().add("stats-heading");
+    Label highestMultiplierValue = new Label();
+    highestMultiplierValue.getStyleClass().add("stats-item");
+    highestMultiplierValue.textProperty().bind(Bindings.format("%dx", Statistics.highestMultiplier));
+    highestMultiplierBox.getChildren().addAll(highestMultiplierHeading, highestMultiplierValue);
 
+    // Add all the individual stat HBoxes to the main VBox container
     statsVBox.getChildren().addAll(statsTitle, gamesPlayedBox, linesClearedBox, highestScoreBox, highestMultiplierBox);
+
     return statsVBox;
   }
   /**
@@ -237,24 +290,26 @@ public class ScoresScene extends BaseScene {
    * @param message the HISCORES message
    */
   private void parseScores(String message) {
-    // Clear the previous remote scores
-    remoteScores.clear();
+    // Create a temporary list to hold the parsed scores.
+    ArrayList<Pair<String, Integer>> newScores = new ArrayList<>();
 
-    // Remove the "HISCORES " prefix
     String scoresData = message.substring(9);
-
-    // Split the data into individual lines
     String[] lines = scoresData.split("\n");
 
-    // Process each score line
     for (String line : lines) {
       String[] parts = line.split(":");
       if (parts.length == 2) {
         String name = parts[0];
-        int score = Integer.parseInt(parts[1]);
-        remoteScores.add(new Pair<>(name, score));
+        int score = Integer.parseInt(parts[1].trim()); // Use trim() for safety
+        newScores.add(new Pair<>(name, score));
       }
     }
+
+    // Now, update the main observable list in a single, atomic operation.
+    // This will fire the listeners only ONCE, after all data is ready.
+    Platform.runLater(() -> {
+      remoteScores.setAll(newScores);
+    });
   }
   /**
    * Checks if the player's score is a new high score and shows a prompt if it is.
